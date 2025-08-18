@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">
+	<PublicationTimestamp>2023-01-01T12:00:00</PublicationTimestamp>
+	<ParticipantRef>TEST</ParticipantRef>
+	<dataObjects>
+		<CompositeFrame id="TEST:CompositeFrame:1" version="1">
+			<!-- Missing Name element -->
+			<ServiceFrame id="TEST:ServiceFrame:1" version="1">
+				<!-- Missing Name element -->
+				<lines>
+					<Line id="TEST:Line:1" version="1">
+						<!-- Missing Name element -->
+						<!-- Missing PublicCode element -->
+						<!-- Missing TransportMode element -->
+						<!-- Missing OperatorRef element -->
+					</Line>
+				</lines>
+				<routes>
+					<Route id="TEST:Route:1" version="1">
+						<!-- Missing Name element -->
+						<!-- Missing LineRef element -->
+						<!-- Missing pointsInSequence element -->
+					</Route>
+				</routes>
+			</ServiceFrame>
+		</CompositeFrame>
+	</dataObjects>
+</PublicationDelivery>

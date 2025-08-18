@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">
+	<PublicationTimestamp>2023-01-01T12:00:00</PublicationTimestamp>
+	<ParticipantRef>TEST</ParticipantRef>
+	<dataObjects>
+		<CompositeFrame id="TEST:CompositeFrame:1" version="1">
+			<Name>Test Composite Frame</Name>
+			<TypeOfFrameRef ref="TEST:TypeOfFrame:NETEX_SCHEDULE"/>
+			<ServiceFrame id="TEST:ServiceFrame:1" version="1">
+				<Name>Test Service Frame</Name>
+				<Network id="TEST:Network:1" version="1">
+					<Name>Test Network</Name>
+					<AuthorityRef ref="TEST:Authority:1"/>
+				</Network>
+				<lines>
+					<Line id="TEST:Line:1" version="1">
+						<Name>Test Line</Name>
+						<PublicCode>1</PublicCode>
+						<TransportMode>bus</TransportMode>
+						<TransportSubmode>localBus</TransportSubmode>
+						<OperatorRef ref="TEST:Operator:1"/>
+						<RepresentedByGroupRef ref="TEST:Network:1"/>
+					</Line>
+				</lines>
+				<routes>
+					<Route id="TEST:Route:1" version="1">
+						<Name>Test Route</Name>
+						<LineRef ref="TEST:Line:1"/>
+						<DirectionType>outbound</DirectionType>
+						<pointsInSequence>
+							<RoutePoint id="TEST:RoutePoint:1" version="1" order="1">
+								<projections>
+									<PointProjection id="TEST:PointProjection:1" version="1">
+										<ProjectToRef ref="TEST:ScheduledStopPoint:1"/>
+									</PointProjection>
+								</projections>
+							</RoutePoint>
+							<RoutePoint id="TEST:RoutePoint:2" version="1" order="2">
+								<projections>
+									<PointProjection id="TEST:PointProjection:2" version="1">
+										<ProjectToRef ref="TEST:ScheduledStopPoint:2"/>
+									</PointProjection>
+								</projections>
+							</RoutePoint>
+						</pointsInSequence>
+					</Route>
+				</routes>
+				<scheduledStopPoints>
+					<ScheduledStopPoint id="TEST:ScheduledStopPoint:1" version="1">
+						<Name>First Stop</Name>
+						<StopAreas>
+							<StopAreaRef ref="TEST:StopArea:1"/>
+						</StopAreas>
+					</ScheduledStopPoint>
+					<ScheduledStopPoint id="TEST:ScheduledStopPoint:2" version="1">
+						<Name>Second Stop</Name>
+						<StopAreas>
+							<StopAreaRef ref="TEST:StopArea:2"/>
+						</StopAreas>
+					</ScheduledStopPoint>
+				</scheduledStopPoints>
+			</ServiceFrame>
+			<ResourceFrame id="TEST:ResourceFrame:1" version="1">
+				<Name>Test Resource Frame</Name>
+				<organisations>
+					<Authority id="TEST:Authority:1" version="1">
+						<Name>Test Authority</Name>
+					</Authority>
+					<Operator id="TEST:Operator:1" version="1">
+						<Name>Test Operator</Name>
+					</Operator>
+				</organisations>
+			</ResourceFrame>
+		</CompositeFrame>
+	</dataObjects>
+</PublicationDelivery>

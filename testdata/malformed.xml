@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicationDelivery xmlns="http://www.netex.org.uk/netex" version="1.0">
+	<PublicationTimestamp>2023-01-01T12:00:00</PublicationTimestamp>
+	<ParticipantRef>TEST</ParticipantRef>
+	<dataObjects>
+		<CompositeFrame id="TEST:CompositeFrame:1" version="1">
+			<Name>Malformed XML Test</Name>
+			<ServiceFrame id="TEST:ServiceFrame:1" version="1">
+				<Name>Test Service Frame</Name>
+				<lines>
+					<Line id="TEST:Line:1" version="1">
+						<Name>Test Line</Name>
+						<PublicCode>1</PublicCode>
+						<TransportMode>bus
+						<!-- Missing closing tag -->
+					</Line>
+					<!-- Missing closing tag for lines -->
+				<!-- Missing closing tag for ServiceFrame -->
+			<!-- Missing closing tag for CompositeFrame -->
+		<!-- Missing closing tag for dataObjects -->
+	<!-- Missing closing tag for PublicationDelivery -->
