@@ -2,9 +2,9 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/theoremus-urban-solutions/netex-validator/types"
 	"gopkg.in/yaml.v3"
@@ -19,7 +19,7 @@ type ValidatorConfig struct {
 
 // ValidatorSettings contains general validator settings
 type ValidatorSettings struct {
-	Profile         string `yaml:"profile"`         // e.g., "nordic", "eu", "custom"
+	Profile         string `yaml:"profile"`         // e.g., "eu", "custom"
 	MaxFileSize     int64  `yaml:"maxFileSize"`     // Maximum file size in bytes
 	MaxSchemaErrors int    `yaml:"maxSchemaErrors"` // Maximum schema errors to report
 	ConcurrentFiles int    `yaml:"concurrentFiles"` // Number of files to process concurrently
@@ -70,7 +70,7 @@ type OutputConfig struct {
 func DefaultConfig() *ValidatorConfig {
 	return &ValidatorConfig{
 		Validator: ValidatorSettings{
-			Profile:         "nordic",
+			Profile:         "eu",
 			MaxFileSize:     100 * 1024 * 1024, // 100MB
 			MaxSchemaErrors: 100,
 			ConcurrentFiles: 4,
@@ -202,8 +202,13 @@ func LoadConfig(configPath string) (*ValidatorConfig, error) {
 		return nil, fmt.Errorf("configuration file not found: %s", configPath)
 	}
 
+	// Validate file path to prevent path traversal
+	if !filepath.IsAbs(configPath) && strings.Contains(configPath, "..") {
+		return nil, fmt.Errorf("invalid config file path: %s", configPath)
+	}
+
 	// Read file
-	data, err := ioutil.ReadFile(configPath)
+	data, err := os.ReadFile(configPath) //nolint:gosec // Path is validated above
 	if err != nil {
 		return nil, fmt.Errorf("failed to read configuration file: %w", err)
 	}
@@ -225,7 +230,7 @@ func LoadConfig(configPath string) (*ValidatorConfig, error) {
 func (c *ValidatorConfig) SaveConfig(configPath string) error {
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(configPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
@@ -236,7 +241,7 @@ func (c *ValidatorConfig) SaveConfig(configPath string) error {
 	}
 
 	// Write file
-	if err := ioutil.WriteFile(configPath, data, 0644); err != nil {
+	if err := os.WriteFile(configPath, data, 0o600); err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}
 

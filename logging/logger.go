@@ -146,69 +146,69 @@ func NewDebugLogger() *Logger {
 // WithContext returns a logger with context values.
 func (l *Logger) WithContext(ctx context.Context) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("context", ctx.Value("request_id")),
-		level:  l.level,
+		l.With("context", ctx.Value("request_id")),
+		l.level,
 	}
 }
 
 // WithFile returns a logger with file context.
 func (l *Logger) WithFile(filename string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("file", filename),
-		level:  l.level,
+		l.With("file", filename),
+		l.level,
 	}
 }
 
 // WithValidation returns a logger with validation context.
 func (l *Logger) WithValidation(validationID, codespace string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With(
+		l.With(
 			"validation_id", validationID,
 			"codespace", codespace,
 		),
-		level: l.level,
+		l.level,
 	}
 }
 
 // WithRule returns a logger with validation rule context.
 func (l *Logger) WithRule(ruleCode, ruleName string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With(
+		l.With(
 			"rule_code", ruleCode,
 			"rule_name", ruleName,
 		),
-		level: l.level,
+		l.level,
 	}
 }
 
 // WithError returns a logger with error context.
 func (l *Logger) WithError(err error) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("error", err.Error()),
-		level:  l.level,
+		l.With("error", err.Error()),
+		l.level,
 	}
 }
 
 // WithDuration returns a logger with duration context.
 func (l *Logger) WithDuration(operation string, duration time.Duration) *Logger {
 	return &Logger{
-		Logger: l.Logger.With(
+		l.With(
 			"operation", operation,
 			"duration_ms", duration.Milliseconds(),
 		),
-		level: l.level,
+		l.level,
 	}
 }
 
 // WithMetrics returns a logger with performance metrics.
 func (l *Logger) WithMetrics(filesProcessed, issuesFound int, processingTime time.Duration) *Logger {
 	return &Logger{
-		Logger: l.Logger.With(
+		l.With(
 			"files_processed", filesProcessed,
-			"issues_found", issuesFound,
+			"issues_processed", issuesFound,
 			"processing_time_ms", processingTime.Milliseconds(),
 		),
-		level: l.level,
+		l.level,
 	}
 }
 

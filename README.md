@@ -1,6 +1,6 @@
 # NetEX Validator - Go Library & CLI
 
-A comprehensive Go implementation of the NetEX validator for validating NetEX datasets against the Nordic NeTEx Profile. Available as both a Go library and command-line tool.
+A comprehensive Go implementation of the NetEX validator for validating NetEX datasets against the EU NeTEx Profile. Available as both a Go library and command-line tool.
 
 ## Features
 
@@ -189,8 +189,8 @@ ERROR (1):
 go test ./...
 
 # Run specific package tests
-go test ./pkg/validator
-go test ./pkg/xpath
+go test ./validator
+go test ./xpath
 
 # Run with coverage
 go test -cover ./...

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	netexvalidator "github.com/theoremus-urban-solutions/netex-validator/netexvalidator"
 	"github.com/theoremus-urban-solutions/netex-validator/types"
+	"github.com/theoremus-urban-solutions/netex-validator/validator"
 )
 
 var (
@@ -42,7 +42,7 @@ var (
 func main() {
 	var rootCmd = &cobra.Command{
 		Use:   "netex-validator",
-		Short: "NetEX validator for Nordic NeTEx Profile",
+		Short: "NetEX validator for EU NeTEx Profile",
 		Long: `A comprehensive NetEX validator with extensive rule coverage that supports:
 - XML Schema validation
 - 88+ XPath-based business rules covering all major NetEX categories
@@ -86,8 +86,12 @@ Examples:
 	rootCmd.Flags().IntVar(&cacheTTLHours, "cache-ttl", 24, "Cache time-to-live in hours")
 
 	// Mark required flags
-	rootCmd.MarkFlagRequired("input")
-	rootCmd.MarkFlagRequired("codespace")
+	if err := rootCmd.MarkFlagRequired("input"); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to mark --input as required: %v\n", err)
+	}
+	if err := rootCmd.MarkFlagRequired("codespace"); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to mark --codespace as required: %v\n", err)
+	}
 
 	// Add generate-config command
 	var generateConfigCmd = &cobra.Command{
@@ -123,7 +127,11 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 
 	// Start CPU profiling if requested
 	if cpuProfile != "" {
-		f, err := os.Create(cpuProfile)
+		// Validate file path to prevent path traversal
+		if !filepath.IsAbs(cpuProfile) && strings.Contains(cpuProfile, "..") {
+			return fmt.Errorf("invalid CPU profile path: %s", cpuProfile)
+		}
+		f, err := os.Create(cpuProfile) //nolint:gosec // Path is validated above
 		if err != nil {
 			return fmt.Errorf("could not create CPU profile: %w", err)
 		}
@@ -132,7 +140,7 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("could not start CPU profile: %w", err)
 		}
 		defer pprof.StopCPUProfile()
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 	}
 
 	if verbose {
@@ -145,7 +153,7 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create validation options
-	options := netexvalidator.DefaultValidationOptions().
+	options := validator.DefaultValidationOptions().
 		WithCodespace(codespace).
 		WithSkipSchema(skipSchema).
 		WithVerbose(verbose).
@@ -187,7 +195,7 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 	options.OutputFormat = format
 
 	// Perform validation
-	var result *netexvalidator.ValidationResult
+	var result *validator.ValidationResult
 	var err error
 
 	isZip := strings.ToLower(filepath.Ext(inputFile)) == ".zip"
@@ -195,12 +203,12 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 		if verbose {
 			fmt.Printf("Processing ZIP dataset...\n")
 		}
-		result, err = netexvalidator.ValidateZip(inputFile, options)
+		result, err = validator.ValidateZip(inputFile, options)
 	} else {
 		if verbose {
 			fmt.Printf("Processing single XML file...\n")
 		}
-		result, err = netexvalidator.ValidateFile(inputFile, options)
+		result, err = validator.ValidateFile(inputFile, options)
 	}
 
 	if err != nil {
@@ -209,10 +217,19 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 
 	// Write memory profile if requested
 	if memProfile != "" {
-		f, err := os.Create(memProfile)
+		// Validate file path to prevent path traversal
+		if !filepath.IsAbs(memProfile) && strings.Contains(memProfile, "..") {
+			return fmt.Errorf("invalid memory profile path: %s", memProfile)
+		}
+		f, err := os.Create(memProfile) //nolint:gosec // Path is validated above
 		if err == nil {
-			pprof.WriteHeapProfile(f)
-			f.Close()
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				_ = f.Close()
+				return fmt.Errorf("could not write memory profile: %w", err)
+			}
+			_ = f.Close()
+		} else {
+			return fmt.Errorf("could not create mem profile: %w", err)
 		}
 	}
 
@@ -240,7 +257,7 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 		if verbose {
 			fmt.Printf("Validation completed with errors\n")
 		}
-		os.Exit(1)
+		return fmt.Errorf("validation found errors")
 	}
 
 	if verbose {
@@ -250,7 +267,7 @@ func validateCommand(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func outputResult(result *netexvalidator.ValidationResult, format string) error {
+func outputResult(result *validator.ValidationResult, format string) error {
 	var output []byte
 	var err error
 
@@ -269,7 +286,7 @@ func outputResult(result *netexvalidator.ValidationResult, format string) error 
 
 	// Write to file or stdout
 	if outputFile != "" {
-		return os.WriteFile(outputFile, output, 0644)
+		return os.WriteFile(outputFile, output, 0o600)
 	} else {
 		fmt.Print(string(output))
 		return nil
@@ -305,7 +322,7 @@ output:
   maxEntries: 0
 `
 
-	err := os.WriteFile(configPath, []byte(defaultConfig), 0644)
+	err := os.WriteFile(configPath, []byte(defaultConfig), 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}

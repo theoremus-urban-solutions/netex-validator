@@ -74,7 +74,6 @@ The Go implementation now has **more comprehensive validation** than the Java ve
 - **Mandatory fields**: 15+ comprehensive field validation rules
 - **Structural validation**: 10+ hierarchy and ordering rules
 - **Data consistency**: 10+ cross-element consistency rules
-- **Nordic profile**: 6 Nordic NeTEx specific requirements
 - **EU profile**: 6 European accessibility and standards rules
 - **Advanced references**: 5+ complex reference validation rules
 - **Documentation examples**: 3 complex multi-element rules
@@ -85,7 +84,7 @@ The Go implementation now has **more comprehensive validation** than the Java ve
 - **NETEX_ID_4**: Version format validation
 - **NETEX_ID_6**: Intra-file duplicate detection
 - **NETEX_ID_12**: Mandatory ID validation
-- **NETEX_ID_13**: Nordic ID format compliance
+- **NETEX_ID_13**: EU ID format compliance
 - **Advanced consistency**: Circular reference detection
 - **Hierarchical validation**: Parent-child ID relationships
 - **Codespace validation**: Multi-file codespace consistency
@@ -100,7 +99,7 @@ The Go implementation now has **more comprehensive validation** than the Java ve
 - **Version consistency checking** across multiple files
 - **Entity type validation** with allowed reference mapping
 - **External reference validation** with codespace detection
-- **Nordic ID format enforcement** with pattern matching
+- **EU ID format enforcement** with pattern matching
 
 ### Advanced Transport Mode Validation  
 - **Comprehensive submode validation** for all transport types
@@ -150,7 +149,7 @@ The Go implementation now has **more comprehensive validation** than the Java ve
 
 ### 3. Advanced Configuration
 - **YAML-based configuration** with rule customization
-- **Profile-based validation** (Nordic, EU, custom)
+- **Profile-based validation** (EU, custom)
 - **Rule enabling/disabling** at category level
 - **Performance tuning options** with concurrency control
 
@@ -162,11 +161,11 @@ The Go implementation now has **more comprehensive validation** than the Java ve
 
 ## 🎯 Compliance and Standards
 
-### Nordic NeTEx Profile Compliance
+### EU NeTEx Profile Compliance
 - ✅ **Complete ID format validation** with codespace requirements
-- ✅ **Transport mode restrictions** according to Nordic standards  
+- ✅ **Transport mode restrictions** according to EU standards  
 - ✅ **Authority and operator requirements** fully implemented
-- ✅ **Stop place categorization** with Nordic types
+- ✅ **Stop place categorization** with EU types
 - ✅ **Accessibility information** validation
 
 ### EU NeTEx Profile Compliance  

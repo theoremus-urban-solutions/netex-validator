@@ -1,145 +1,58 @@
-# NetEX Validator Enhancement TODO
 
-Based on analysis of the GTFS validator architecture, here are key improvements to implement:
+## 🚀 Future Enhancement Opportunities (From GTFS Validator Analysis)
 
-## 1. Replace Error System with Notice Pattern
+### 1. Notice System Enhancement
+- [ ] **Implement Notice Pattern**: Replace `ValidationReportEntry[]` with `NoticeContainer` system
+- [ ] **Notice Limits**: Prevent spam by limiting notices per rule type
+- [ ] **Thread-Safe Collection**: Better concurrent error handling
+- [ ] **Enhanced Error Descriptions**: More actionable fix suggestions
+**Note**: Already have basic enhanced errors with suggestions, but can improve further
 
-**Current:** `ValidationReportEntry[]` with basic error collection
-**Goal:** Implement GTFS validator's `NoticeContainer` system
+### 2. Multi-Mode Validation System
+- [ ] **Fast Mode**: Schema + ~30 critical rules (<2s) for API/CI usage
+- [ ] **Standard Mode**: Current full validation (~350 rules)
+- [ ] **Thorough Mode**: Extended validation with quality checks
+- [ ] **CLI Flag**: Add `--mode fast|standard|thorough`
+**Benefit**: API-friendly fast validation when full analysis not needed
 
-### Tasks:
-- [ ] Create `notice/` package with:
-  - [ ] `Notice` interface (code, severity, context)
-  - [ ] `NoticeContainer` for thread-safe collection
-  - [ ] Notice limits per type to prevent spam
-  - [ ] Severity-based filtering and statistics
-- [ ] Replace `ValidationReportEntry` usage throughout codebase
-- [ ] Add actionable error descriptions with fix suggestions
-- [ ] Implement notice aggregation and better reporting
+### 3. Streaming & Memory Optimizations
+- [ ] **Streaming XML Processing**: For files >100MB
+- [ ] **Object Pooling**: Reuse objects for repeated operations
+- [ ] **Lazy Rule Loading**: Load rules on-demand based on mode
+**Note**: Already have concurrent ZIP processing and memory cache
 
-**Benefits:** Better error management, prevents spam, actionable feedback
+### 4. Rule Organization by Depth
+- [ ] **Core Rules**: Schema, structure, mandatory elements
+- [ ] **Business Rules**: EU NeTEx Profile validation
+- [ ] **Quality Rules**: Performance and data quality suggestions
+- [ ] **Mode-Based Filtering**: Execute rules based on validation mode
 
-## 2. Multi-Mode Validation System
+### 5. Enhanced Reporting
+- [ ] **Interactive HTML Reports**: Collapsible sections, better navigation
+- [ ] **Notice Grouping**: Group errors by type/file/severity
+- [ ] **Rule Coverage Report**: Show which rules were executed
+**Note**: Already have good HTML reports, but can be more interactive
 
-**Current:** Single validation approach for all use cases
-**Goal:** Three validation modes for different performance needs
+### 6. CLI & Progress Improvements
+- [ ] **Progress Indicators**: For long-running validations
+- [ ] **Performance Metrics**: Show timing for each validation phase
+- [ ] **Better Summary Output**: Clearer validation results
+**Note**: Already have verbose mode and good logging
 
-### Tasks:
-- [ ] Add validation mode enum: `Fast`, `Standard`, `Thorough`
-- [ ] Restructure rule execution based on mode:
-  - [ ] Fast: Schema + critical rules only (~30 rules, <2s)
-  - [ ] Standard: Current full validation (~200 rules)
-  - [ ] Thorough: Extended + quality rules (~300 rules)
-- [ ] Update CLI with `--mode` flag
-- [ ] Modify validator runner to filter rules by mode
+### 7. Extended Features (Lower Priority)
+- [ ] **Custom rule definition API for user-specific validation rules**
+- [ ] **REST API wrapper for validation services**
+- [ ] **Docker containerization**
+- [ ] **CI/CD integration guides**
 
-**Benefits:** API-friendly fast mode, comprehensive analysis when needed
+## 🎯 Current Recommendation
 
-## 3. Enhanced Parallel Processing
+Future enhancements should focus on **performance optimizations** for enterprise-scale deployments rather than core functionality gaps.
 
-**Current:** Basic goroutine parallelization
-**Goal:** Configurable worker pool system
+## 📈 Implementation Priority (GTFS-Inspired Enhancements)
 
-### Tasks:
-- [ ] Create worker pool for ZIP file processing
-- [ ] Add streaming processing for large files
-- [ ] Implement memory pooling for repeated operations
-- [ ] Add cancellation and timeout support
-- [ ] Configurable worker count based on CPU cores
-
-**Benefits:** Better resource management, handles large datasets efficiently
-
-## 4. Rule Organization by Validation Depth
-
-**Current:** Flat rule structure
-**Goal:** Hierarchical rule organization
-
-### Tasks:
-- [ ] Reorganize rules into validation levels:
-  - [ ] **Core**: Schema, structure, mandatory elements
-  - [ ] **Business**: Nordic NeTEx Profile rules
-  - [ ] **Quality**: Performance and data quality suggestions
-- [ ] Update rule loading to support mode-based filtering
-- [ ] Maintain existing XPath rule execution engine
-- [ ] Add rule metadata for categorization
-
-**Benefits:** Clear rule hierarchy, mode-based rule selection
-
-## 5. CLI and User Experience Improvements
-
-**Current:** Basic CLI with limited feedback
-**Goal:** Enhanced user experience
-
-### Tasks:
-- [ ] Add progress indicators for long validations
-- [ ] Implement validation mode selection
-- [ ] Add summary statistics in output
-- [ ] Better error aggregation in reports
-- [ ] Add validation timing and performance metrics
-
-**Benefits:** Better user feedback, clear performance insights
-
-## 6. Memory and Performance Optimizations
-
-**Current:** Standard memory usage patterns
-**Goal:** Memory-efficient processing
-
-### Tasks:
-- [ ] Implement object pooling for frequent allocations
-- [ ] Add streaming XML processing for large files
-- [ ] Optimize memory usage during ZIP processing
-- [ ] Add memory usage monitoring and limits
-- [ ] Implement lazy loading for rule sets
-
-**Benefits:** Lower memory footprint, handles larger datasets
-
-## 7. Enhanced Reporting and Output
-
-**Current:** Basic JSON/HTML output
-**Goal:** Rich, actionable reporting
-
-### Tasks:
-- [ ] Add notice grouping and filtering in reports
-- [ ] Implement interactive HTML reports with collapsible sections
-- [ ] Add validation summary with key metrics
-- [ ] Include fix suggestions in error descriptions
-- [ ] Add rule coverage reporting
-
-**Benefits:** More useful reports, actionable feedback
-
----
-
-## Implementation Priority
-
-1. **High Priority:** Notice System (#1) - Core improvement affecting all validation
-2. **High Priority:** Multi-Mode System (#2) - Major user experience improvement  
-3. **Medium Priority:** Enhanced Parallel Processing (#3) - Performance improvement
-4. **Medium Priority:** Rule Organization (#4) - Foundation for other improvements
-5. **Low Priority:** CLI Improvements (#5) - User experience polish
-6. **Low Priority:** Memory Optimizations (#6) - Performance edge cases
-7. **Low Priority:** Enhanced Reporting (#7) - Output quality improvements
-
-## Notes
-
-- Maintain backward compatibility with existing API
-- Keep NetEX-specific validation logic unchanged
-- Focus on architecture improvements, not validation rule changes
-- Ensure thread safety for all new components
-- Add comprehensive tests for new functionality
-
----
-
-## ✅ Recently Completed Features
-
-### Memory-Only Validation Cache ✅
-- ✅ **Replaced file-based cache with in-memory LRU cache**
-- ✅ **Configurable memory limits and entry count limits**
-- ✅ **Server-friendly caching without file system bloat**
-- ✅ **CLI flags: --cache-max-entries, --cache-max-memory-mb**
-
-### Current Architecture Status ✅
-- ✅ **350+ XPath validation rules (exceeds Java's 268+)**
-- ✅ **High Performance**: 66KB ZIP validates in 0.345 seconds
-- ✅ **Memory Efficient**: Concurrent processing with proper resource management
-- ✅ **Comprehensive Coverage**: All major NetEX elements validated
-- ✅ **Production Ready**: Clean APIs, comprehensive logging, extensive tests
+1. **High Priority**: Multi-Mode Validation - Major UX improvement for API/server usage
+2. **High Priority**: Notice System - Better error management and spam prevention  
+3. **Medium Priority**: Streaming Processing - Handle very large files efficiently
+4. **Low Priority**: Enhanced Reporting - Polish existing good reports
+5. **Low Priority**: CLI Improvements - User experience enhancements

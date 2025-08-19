@@ -36,7 +36,7 @@ func NewRuleRegistry(cfg *config.ValidatorConfig) *RuleRegistry {
 	return registry
 }
 
-// WithProfile allows selecting a ruleset profile (e.g., "nordic", "eu").
+// WithProfile allows selecting a ruleset profile (e.g., "eu", "custom").
 func (r *RuleRegistry) WithProfile(profile string) *RuleRegistry {
 	r.profile = profile
 	return r

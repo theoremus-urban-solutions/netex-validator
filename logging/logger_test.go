@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+type contextKey string
+
 func TestNewLogger(t *testing.T) {
 	var buf bytes.Buffer
 	config := LoggerConfig{
@@ -81,7 +83,7 @@ func TestNewJSONLogger(t *testing.T) {
 	logger.Info("test json message", "key", "value")
 
 	output := buf.String()
-	
+
 	// Verify it's valid JSON
 	var jsonData map[string]interface{}
 	if err := json.Unmarshal([]byte(output), &jsonData); err != nil {
@@ -351,7 +353,7 @@ func TestGlobalLogger(t *testing.T) {
 	// Set a test logger as default
 	testLogger := NewLogger(LoggerConfig{
 		Level:  LevelInfo,
-		Format: "json", 
+		Format: "json",
 		Output: &buf,
 	})
 	SetDefaultLogger(testLogger)
@@ -389,7 +391,7 @@ func TestGlobalLogger(t *testing.T) {
 	}
 	buf.Reset()
 
-	ValidationComplete("test.xml", 100*time.Millisecond, 2, true) 
+	ValidationComplete("test.xml", 100*time.Millisecond, 2, true)
 	output = buf.String()
 	if !strings.Contains(output, "Validation completed") {
 		t.Errorf("Expected global ValidationComplete to work, got: %s", output)
@@ -418,11 +420,11 @@ func TestWithContext(t *testing.T) {
 		Output: &buf,
 	})
 
-	ctx := context.WithValue(context.Background(), "request_id", "req-123")
+	ctx := context.WithValue(context.Background(), contextKey("request_id"), "req-123")
 	contextLogger := logger.WithContext(ctx)
-	
+
 	contextLogger.Info("context test")
-	
+
 	output := buf.String()
 	// Note: context value might be nil if not properly set up, but method should not panic
 	if output == "" {
