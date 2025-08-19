@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -336,15 +337,22 @@ func (l *Logger) IsLevelEnabled(level LogLevel) bool {
 }
 
 // Global logger instance for convenience.
-var defaultLogger = NewDefaultLogger()
+var (
+	defaultLogger *Logger = NewDefaultLogger()
+	loggerMu      sync.RWMutex
+)
 
 // SetDefaultLogger sets the global default logger.
 func SetDefaultLogger(logger *Logger) {
+	loggerMu.Lock()
+	defer loggerMu.Unlock()
 	defaultLogger = logger
 }
 
 // GetDefaultLogger returns the global default logger.
 func GetDefaultLogger() *Logger {
+	loggerMu.RLock()
+	defer loggerMu.RUnlock()
 	return defaultLogger
 }
 

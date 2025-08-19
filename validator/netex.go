@@ -43,6 +43,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/antchfx/xmlquery"
@@ -621,6 +622,7 @@ func (v *NetexValidator) createValidationResultFromReport(report *types.Validati
 type SimpleXPathRule struct {
 	rule     rules.Rule
 	compiled *antxpath.Expr
+	mu       sync.Mutex // Protects compiled XPath expression
 }
 
 // NewSimpleXPathRule creates a new adapter from a rules.Rule
@@ -657,8 +659,12 @@ func (r *SimpleXPathRule) Validate(ctx context.XPathValidationContext) ([]types.
 	}()
 
 	if r.compiled != nil {
+		// Synchronize access to shared compiled XPath expression
+		r.mu.Lock()
 		nav := xmlquery.CreateXPathNavigator(ctx.Document)
-		if v := r.compiled.Evaluate(nav); v != nil {
+		v := r.compiled.Evaluate(nav)
+		r.mu.Unlock()
+		if v != nil {
 			if iter, ok := v.(*antxpath.NodeIterator); ok {
 				for iter.MoveNext() {
 					if n, ok := iter.Current().(*xmlquery.NodeNavigator); ok {
