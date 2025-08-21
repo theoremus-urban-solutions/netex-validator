@@ -1,0 +1,15 @@
+github.com/theoremus-urban-solutions/netex-validator/cmd/netex-validator
+github.com/theoremus-urban-solutions/netex-validator/config
+github.com/theoremus-urban-solutions/netex-validator/examples
+github.com/theoremus-urban-solutions/netex-validator/interfaces
+github.com/theoremus-urban-solutions/netex-validator/logging
+github.com/theoremus-urban-solutions/netex-validator/reporting
+github.com/theoremus-urban-solutions/netex-validator/rules
+github.com/theoremus-urban-solutions/netex-validator/testutil
+github.com/theoremus-urban-solutions/netex-validator/types
+github.com/theoremus-urban-solutions/netex-validator/utils
+github.com/theoremus-urban-solutions/netex-validator/validation/context
+github.com/theoremus-urban-solutions/netex-validator/validation/engine
+github.com/theoremus-urban-solutions/netex-validator/validation/ids
+github.com/theoremus-urban-solutions/netex-validator/validation/schema
+github.com/theoremus-urban-solutions/netex-validator/validator

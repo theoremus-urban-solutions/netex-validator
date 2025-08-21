@@ -1,0 +1,115 @@
+package reporting // import "github.com/theoremus-urban-solutions/netex-validator/reporting"
+
+
+TYPES
+
+type ErrorFormatter struct{}
+    ErrorFormatter provides methods for formatting validation errors in
+    different styles.
+
+func NewErrorFormatter() *ErrorFormatter
+    NewErrorFormatter creates a new error formatter.
+
+func (f *ErrorFormatter) FormatAsJSON(err *ValidationError) map[string]interface{}
+    FormatAsJSON formats the error as JSON-like structure (for structured
+    logging).
+
+func (f *ErrorFormatter) FormatAsList(errors []*ValidationError) string
+    FormatAsList formats multiple errors as a numbered list.
+
+func (f *ErrorFormatter) FormatAsText(err *ValidationError) string
+    FormatAsText formats the error as plain text.
+
+type ValidationError struct {
+	// Code is the error code (e.g., "VALIDATION_001")
+	Code string
+	// Message is the primary error message
+	Message string
+	// Details provides additional context about the error
+	Details string
+	// File is the filename where the error occurred
+	File string
+	// Line is the line number where the error occurred (if available)
+	Line int
+	// Column is the column number where the error occurred (if available)
+	Column int
+	// Rule is the validation rule that was violated (if applicable)
+	Rule string
+	// Severity indicates the severity level of the error
+	Severity types.Severity
+	// Suggestions provides actionable suggestions for fixing the error
+	Suggestions []string
+	// Context provides additional context about the validation
+	Context map[string]interface{}
+	// RelatedIssues contains references to related validation issues
+	RelatedIssues []string
+	// Cause is the underlying error that caused this validation error
+	Cause error
+}
+    ValidationError represents an enhanced validation error with context and
+    suggestions.
+
+func NewBusinessRuleViolationError(file, ruleCode, ruleName, message string, line int) *ValidationError
+    NewBusinessRuleViolationError creates an error for business rule violations
+    with rule-specific guidance.
+
+func NewInvalidReferenceError(file, refType, refValue, targetType string, line int) *ValidationError
+    NewInvalidReferenceError creates an error for broken references with
+    resolution suggestions.
+
+func NewInvalidTransportModeError(file, invalidMode string, line int) *ValidationError
+    NewInvalidTransportModeError creates an error for invalid transport modes
+    with valid options.
+
+func NewMissingElementError(file, element, parent string, line int) *ValidationError
+    NewMissingElementError creates an error for missing required elements with
+    context-specific suggestions.
+
+func NewPerformanceWarningError(operation string, duration, threshold int64) *ValidationError
+    NewPerformanceWarningError creates a warning for performance issues.
+
+func NewSchemaValidationError(file string, line int, message string) *ValidationError
+    NewSchemaValidationError creates a schema validation error with helpful
+    suggestions.
+
+func NewValidationError(code, message string) *ValidationError
+    NewValidationError creates a new ValidationError with the provided
+    parameters.
+
+func (e *ValidationError) Error() string
+    Error implements the error interface.
+
+func (e *ValidationError) GetFormattedMessage() string
+    GetFormattedMessage returns a user-friendly formatted error message with
+    suggestions.
+
+func (e *ValidationError) WithCause(cause error) *ValidationError
+    WithCause sets the underlying error that caused this validation error.
+
+func (e *ValidationError) WithContext(key string, value interface{}) *ValidationError
+    WithContext adds context information to the error.
+
+func (e *ValidationError) WithDetails(details string) *ValidationError
+    WithDetails adds detailed error information.
+
+func (e *ValidationError) WithFile(file string) *ValidationError
+    WithFile adds file information to the error.
+
+func (e *ValidationError) WithLocation(line, column int) *ValidationError
+    WithLocation adds line and column information to the error.
+
+func (e *ValidationError) WithRelatedIssue(issue string) *ValidationError
+    WithRelatedIssue adds a reference to a related validation issue.
+
+func (e *ValidationError) WithRule(rule string) *ValidationError
+    WithRule adds validation rule information to the error.
+
+func (e *ValidationError) WithSeverity(severity types.Severity) *ValidationError
+    WithSeverity sets the severity level of the error.
+
+func (e *ValidationError) WithSuggestion(suggestion string) *ValidationError
+    WithSuggestion adds a suggestion for fixing the error.
+
+func (e *ValidationError) WithSuggestions(suggestions ...string) *ValidationError
+    WithSuggestions adds multiple suggestions for fixing the error.
+

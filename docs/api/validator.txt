@@ -1,0 +1,614 @@
+package validator // import "github.com/theoremus-urban-solutions/netex-validator/validator"
+
+Package netexvalidator provides a comprehensive NetEX validation library for Go
+applications.
+
+This package validates NetEX (Network Exchange) files against the EU NeTEx
+Profile, supporting over 200 validation rules covering schema validation,
+business logic rules, and cross-file ID validation.
+
+Basic usage:
+
+    import "github.com/theoremus-urban-solutions/netex-validator"
+
+    // Simple validation
+    options := netexvalidator.DefaultValidationOptions().WithCodespace("MyCodespace")
+    result, err := netexvalidator.ValidateFile("data.xml", options)
+    if err != nil {
+    	log.Fatal(err)
+    }
+
+    // Check results
+    if result.IsValid() {
+    	fmt.Println("Validation passed!")
+    } else {
+    	fmt.Printf("Found %d issues\n", len(result.ValidationReportEntries))
+    }
+
+    // Generate HTML report
+    htmlReport, err := result.ToHTML()
+    if err != nil {
+    	log.Fatal(err)
+    }
+
+The library supports multiple validation modes:
+  - Single XML file validation
+  - ZIP dataset validation (multiple files)
+  - In-memory content validation
+  - Configurable rule sets via YAML
+
+Output formats include JSON, HTML (with interactive interface), and plain text.
+
+TYPES
+
+type HTMLReporter struct {
+	// Has unexported fields.
+}
+    HTMLReporter generates professional HTML reports for validation results
+
+func NewHTMLReporter() *HTMLReporter
+    NewHTMLReporter creates a new HTML reporter
+
+func (r *HTMLReporter) GenerateHTML(result *ValidationResult) (string, error)
+    GenerateHTML generates an HTML report from validation results
+
+type HTMLTemplateData struct {
+	Result           *ValidationResult
+	Summary          ValidationSummary
+	Statistics       *ValidationStatistics
+	IssuesByFile     map[string][]ValidationReportEntry
+	IssuesBySeverity map[string][]ValidationReportEntry
+	IssuesByRule     map[string][]ValidationReportEntry
+	SeverityKeys     []string
+	GeneratedAt      time.Time
+}
+    HTMLTemplateData contains all data needed for HTML template
+
+type NetexSchemaValidatorAdapter struct {
+	// Has unexported fields.
+}
+    NetexSchemaValidatorAdapter adapts XSDValidator to SchemaValidator interface
+
+func NewNetexSchemaValidatorAdapter(xsdValidator *xsdpkg.XSDValidator, maxFindings int) *NetexSchemaValidatorAdapter
+    NewNetexSchemaValidatorAdapter creates a new schema validator adapter
+
+func (a *NetexSchemaValidatorAdapter) GetRules() []types.ValidationRule
+    GetRules implements the SchemaValidator interface
+
+func (a *NetexSchemaValidatorAdapter) Validate(ctx context.SchemaValidationContext) ([]types.ValidationIssue, error)
+    Validate implements the SchemaValidator interface
+
+type NetexValidator struct {
+	// Has unexported fields.
+}
+    NetexValidator is the main library interface for NetEX validation.
+    It encapsulates the validation configuration and provides methods for
+    validating NetEX files and content against the EU NeTEx Profile.
+
+    Use New() or NewWithOptions() to create a validator instance, then call
+    ValidateFile(), ValidateContent(), or ValidateZip() to perform validation.
+
+func New() (*NetexValidator, error)
+    New creates a new NetexValidator instance with default configuration.
+
+    The default configuration includes:
+      - All validation rules enabled
+      - Schema validation enabled
+      - Maximum 100 schema errors reported
+      - Verbose mode disabled
+
+    Returns an error if the validator cannot be initialized.
+
+    Example:
+
+        validator, err := netexvalidator.New()
+        if err != nil {
+        	log.Fatal(err)
+        }
+        result, err := validator.ValidateFile("data.xml")
+
+func NewWithOptions(opts *ValidationOptions) (*NetexValidator, error)
+    NewWithOptions creates a new NetexValidator instance with custom options.
+
+    This allows you to customize validation behavior such as:
+      - Skipping schema validation for faster processing
+      - Setting custom codespace for validation context
+      - Configuring rule overrides via YAML files
+      - Enabling verbose output for debugging
+
+    Parameters:
+      - opts: ValidationOptions containing configuration settings
+
+    Returns a configured NetexValidator instance or an error if initialization
+    fails.
+
+    Example:
+
+        options := netexvalidator.DefaultValidationOptions().
+        	WithCodespace("MyCodespace").
+        	WithVerbose(true).
+        	WithSkipSchema(true)
+        validator, err := netexvalidator.NewWithOptions(options)
+
+func (v *NetexValidator) ValidateContent(content []byte, filename string) (*ValidationResult, error)
+    ValidateContent validates NetEX content from memory using this validator
+    instance
+
+func (v *NetexValidator) ValidateFile(filePath string) (*ValidationResult, error)
+    ValidateFile validates a single NetEX file using this validator instance
+
+func (v *NetexValidator) ValidateReader(reader io.Reader, filename string) (*ValidationResult, error)
+    ValidateReader validates NetEX content from an io.Reader
+
+func (v *NetexValidator) ValidateZip(zipPath string) (*ValidationResult, error)
+    ValidateZip validates a ZIP dataset using this validator instance
+
+type SimpleXPathRule struct {
+	// Has unexported fields.
+}
+    SimpleXPathRule is a minimal adapter to execute a rule's XPath and produce
+    issues
+
+func NewSimpleXPathRule(rule rules.Rule) *SimpleXPathRule
+    NewSimpleXPathRule creates a new adapter from a rules.Rule
+
+func (r *SimpleXPathRule) GetRule() types.ValidationRule
+    GetRule returns the underlying rule metadata
+
+func (r *SimpleXPathRule) GetXPath() string
+    GetXPath returns the XPath expression
+
+func (r *SimpleXPathRule) Validate(ctx context.XPathValidationContext) ([]types.ValidationIssue, error)
+    Validate executes the XPath and returns issues for matched nodes
+
+type ValidationOptions struct {
+	// Codespace identifies the authority/operator responsible for the NetEX data.
+	// This is used for validation context and should match the data provider's
+	// identifier (e.g., "NO" for Norway, "SE" for Sweden, "DK" for Denmark).
+	Codespace string
+
+	// ConfigFile specifies the path to a YAML configuration file for rule customization.
+	// If empty, built-in default rules are used. The config file can enable/disable
+	// specific rules and override their severity levels.
+	ConfigFile string
+
+	// SkipSchema bypasses XML schema validation for faster processing.
+	// When true, only business rule validation is performed. Useful when you trust
+	// the XML structure and want to focus on NetEX-specific business logic.
+	SkipSchema bool
+
+	// SkipValidators bypasses all XPath business rule validation.
+	// When true, only schema validation is performed. Useful for basic
+	// XML structure checking without business logic validation.
+	SkipValidators bool
+
+	// MaxSchemaErrors limits the number of schema validation errors reported.
+	// Set to 0 to use the configuration default (typically 100).
+	// Higher values provide more comprehensive error reporting but may impact performance.
+	MaxSchemaErrors int
+
+	// Verbose enables detailed logging during validation processing.
+	// When true, validation progress, rule execution, and detailed error
+	// information is logged to help with debugging and monitoring.
+	Verbose bool
+
+	// RuleOverrides allows selective enabling/disabling of validation rules.
+	// Map key is the rule code (e.g., "LINE_2", "SERVICE_JOURNEY_4"),
+	// value indicates whether the rule should be executed.
+	RuleOverrides map[string]bool
+
+	// SeverityOverrides allows changing the severity level of specific rules.
+	// Map key is the rule code, value is the new severity level to apply.
+	// Useful for treating warnings as errors or vice versa based on local requirements.
+	SeverityOverrides map[string]types.Severity
+
+	// OutputFormat specifies the preferred output format for structured results.
+	// Supported values: "json" (default), "html" (interactive report), "text" (plain text).
+	// This primarily affects CLI output; library users can call specific To* methods.
+	OutputFormat string
+
+	// LogLevel sets the minimum logging level for validation operations.
+	// Available levels: DEBUG, INFO, WARN, ERROR. Default is INFO.
+	LogLevel logging.LogLevel
+
+	// LogFormat specifies the log output format.
+	// Supported values: "text" (human-readable), "json" (structured). Default is "text".
+	LogFormat string
+
+	// Logger allows custom logger injection. If nil, a default logger is created
+	// based on LogLevel and LogFormat settings.
+	Logger *logging.Logger
+
+	// Profile is deprecated; EU is the default and only supported profile.
+	Profile string
+
+	// MaxFindings limits the total number of validation findings to collect (0 = unlimited).
+	MaxFindings int
+
+	// AllowSchemaNetwork enables downloading schemas from network for XSD validation.
+	AllowSchemaNetwork bool
+
+	// SchemaCacheDir specifies where downloaded schemas are cached.
+	SchemaCacheDir string
+
+	// SchemaTimeoutSeconds sets HTTP timeout for schema downloads.
+	SchemaTimeoutSeconds int
+
+	// UseLibxml2XSD enables real XSD validation using libxml2 bindings when available.
+	// Default is false; when true, the validator will attempt libxml2 and fall back on failure.
+	UseLibxml2XSD bool
+
+	// ConcurrentFiles sets the number of files to process in parallel when validating ZIP datasets.
+	// 0 means use configuration default.
+	ConcurrentFiles int
+
+	// EnableValidationCache enables in-memory caching of validation results by file hash
+	EnableValidationCache bool
+
+	// CacheMaxEntries sets the maximum number of validation results to cache (default: 1000)
+	CacheMaxEntries int
+
+	// CacheMaxMemoryMB sets the approximate maximum memory usage for cache in MB (default: 50)
+	CacheMaxMemoryMB int
+
+	// CacheTTLHours sets how long cached results remain valid (default: 24 hours)
+	CacheTTLHours int
+}
+    ValidationOptions configures NetEX validation behavior.
+
+    This struct allows fine-grained control over validation processing,
+    including rule selection, output formats, and performance optimizations.
+
+    Use DefaultValidationOptions() to get a base configuration, then chain With*
+    methods to customize specific settings:
+
+        options := DefaultValidationOptions().
+        	WithCodespace("NO").
+        	WithVerbose(true).
+        	WithSkipSchema(true)
+
+    All With* methods return the same ValidationOptions instance for method
+    chaining.
+
+func DefaultValidationOptions() *ValidationOptions
+    DefaultValidationOptions returns a ValidationOptions instance with sensible
+    defaults.
+
+    Default configuration:
+      - Codespace: "Default" (should be overridden with actual codespace)
+      - Schema validation: enabled
+      - Business rule validation: enabled
+      - Maximum schema errors: 100
+      - Verbose logging: disabled
+      - Output format: JSON
+      - No rule or severity overrides
+
+    Example:
+
+        options := netexvalidator.DefaultValidationOptions()
+        options.Codespace = "NO"  // Or use WithCodespace("NO")
+
+func (o *ValidationOptions) GetLogger() *logging.Logger
+    GetLogger returns the logger instance to use for validation operations.
+
+    If a custom logger was set via WithLogger(), it is returned directly.
+    Otherwise, a new logger is created based on LogLevel and LogFormat settings.
+
+func (o *ValidationOptions) WithAllowSchemaNetwork(allow bool) *ValidationOptions
+    WithAllowSchemaNetwork toggles schema network download
+
+func (o *ValidationOptions) WithCodespace(codespace string) *ValidationOptions
+    WithCodespace sets the validation codespace and returns the options for
+    chaining.
+
+    The codespace identifies the authority or operator responsible for the
+    NetEX data. Common values include country codes like "NO", "SE", "DK",
+    or operator-specific identifiers like "RUT", "SL", "ATB".
+
+    Example:
+
+        options := DefaultValidationOptions().WithCodespace("NO")
+
+func (o *ValidationOptions) WithConcurrentFiles(n int) *ValidationOptions
+    WithConcurrentFiles sets the parallelism for ZIP processing
+
+func (o *ValidationOptions) WithConfigFile(configFile string) *ValidationOptions
+    WithConfigFile sets the path to a YAML configuration file and returns the
+    options for chaining.
+
+    The configuration file allows customizing validation rules, their severity
+    levels, and other validation parameters. If not specified, built-in defaults
+    are used.
+
+    Example:
+
+        options := DefaultValidationOptions().WithConfigFile("custom-rules.yaml")
+
+func (o *ValidationOptions) WithLogFormat(format string) *ValidationOptions
+    WithLogFormat sets the log output format and returns the options for
+    chaining.
+
+    Supported formats:
+      - "text": Human-readable text format (default)
+      - "json": Structured JSON format for machine processing
+
+    Example:
+
+        options := DefaultValidationOptions().WithLogFormat("json")
+
+func (o *ValidationOptions) WithLogLevel(level logging.LogLevel) *ValidationOptions
+    WithLogLevel sets the logging level and returns the options for chaining.
+
+    Available log levels:
+      - logging.LevelDebug: Detailed debugging information
+      - logging.LevelInfo: General informational messages (default)
+      - logging.LevelWarn: Warning messages for potentially problematic
+        situations
+      - logging.LevelError: Error messages for serious problems
+
+    Example:
+
+        options := DefaultValidationOptions().WithLogLevel(logging.LevelDebug)
+
+func (o *ValidationOptions) WithLogger(logger *logging.Logger) *ValidationOptions
+    WithLogger sets a custom logger instance and returns the options for
+    chaining.
+
+    When a custom logger is provided, LogLevel and LogFormat settings are
+    ignored. The provided logger is used as-is for all validation logging
+    operations.
+
+    Example:
+
+        customLogger := logging.NewJSONLogger(logging.LevelDebug)
+        options := DefaultValidationOptions().WithLogger(customLogger)
+
+func (o *ValidationOptions) WithMaxFindings(n int) *ValidationOptions
+    WithMaxFindings caps the number of collected findings (0 = unlimited)
+
+func (o *ValidationOptions) WithProfile(profile string) *ValidationOptions
+    WithProfile sets the validation profile (e.g., "eu", "custom").
+
+func (o *ValidationOptions) WithRuleOverride(ruleCode string, enabled bool) *ValidationOptions
+    WithRuleOverride enables or disables a specific validation rule and returns
+    the options for chaining.
+
+    This allows fine-grained control over which rules are executed during
+    validation. Rule codes can be found in the documentation or by examining
+    validation results.
+
+    Parameters:
+      - ruleCode: The rule identifier (e.g., "LINE_2", "SERVICE_JOURNEY_4")
+      - enabled: Whether the rule should be executed
+
+    Example:
+
+        options := DefaultValidationOptions().
+        	WithRuleOverride("LINE_2", false).     // Disable this rule
+        	WithRuleOverride("ROUTE_3", true)      // Explicitly enable this rule
+
+func (o *ValidationOptions) WithSchemaCacheDir(dir string) *ValidationOptions
+    WithSchemaCacheDir sets schema cache directory
+
+func (o *ValidationOptions) WithSchemaTimeoutSeconds(seconds int) *ValidationOptions
+    WithSchemaTimeoutSeconds sets schema HTTP timeout
+
+func (o *ValidationOptions) WithSeverityOverride(ruleCode string, severity types.Severity) *ValidationOptions
+    WithSeverityOverride changes the severity level of a specific rule and
+    returns the options for chaining.
+
+    This allows treating warnings as errors, or reducing the severity of certain
+    rules based on local requirements or data quality considerations.
+
+    Parameters:
+      - ruleCode: The rule identifier (e.g., "LINE_2", "SERVICE_JOURNEY_4")
+      - severity: The new severity level (types.INFO, types.WARNING,
+        types.ERROR, types.CRITICAL)
+
+    Example:
+
+        options := DefaultValidationOptions().
+        	WithSeverityOverride("LINE_3", types.ERROR).     // Treat warning as error
+        	WithSeverityOverride("ROUTE_2", types.WARNING)   // Reduce error to warning
+
+func (o *ValidationOptions) WithSkipSchema(skip bool) *ValidationOptions
+    WithSkipSchema configures whether to skip XML schema validation and returns
+    the options for chaining.
+
+    When skip is true, schema validation is bypassed for faster processing.
+    This is useful when you trust the XML structure and only need business rule
+    validation.
+
+    Example:
+
+        options := DefaultValidationOptions().WithSkipSchema(true)  // Skip for speed
+
+func (o *ValidationOptions) WithUseLibxml2XSD(use bool) *ValidationOptions
+    WithUseLibxml2XSD toggles libxml2-backed XSD validation (experimental)
+
+func (o *ValidationOptions) WithValidationCache(enabled bool, maxEntries int, maxMemoryMB int, ttlHours int) *ValidationOptions
+    WithValidationCache enables caching of validation results by file hash with
+    memory limits
+
+func (o *ValidationOptions) WithVerbose(verbose bool) *ValidationOptions
+    WithVerbose enables or disables verbose logging and returns the options for
+    chaining.
+
+    When verbose is true, detailed validation progress and error information is
+    logged, which is helpful for debugging and monitoring validation processes.
+
+    Example:
+
+        options := DefaultValidationOptions().WithVerbose(true)  // Enable debug output
+
+type ValidationReportEntry struct {
+	Name     string                   `json:"name"`
+	Message  string                   `json:"message"`
+	Severity types.Severity           `json:"severity"`
+	FileName string                   `json:"fileName"`
+	Location ValidationReportLocation `json:"location"`
+}
+    ValidationReportEntry represents a single validation issue
+
+type ValidationReportLocation struct {
+	FileName   string `json:"FileName"`
+	LineNumber int    `json:"LineNumber"`
+	XPath      string `json:"XPath"`
+	ElementID  string `json:"ElementID"`
+}
+    ValidationReportLocation provides location information for a validation
+    issue
+
+type ValidationResult struct {
+	// Validation metadata
+	Codespace          string    `json:"codespace"`
+	ValidationReportID string    `json:"validationReportId"`
+	CreationDate       time.Time `json:"creationDate"`
+
+	// Validation entries
+	ValidationReportEntries []ValidationReportEntry `json:"validationReportEntries"`
+
+	// Summary statistics
+	NumberOfValidationEntriesPerRule map[string]int `json:"numberOfValidationEntriesPerRule"`
+
+	// Processing statistics
+	FilesProcessed int           `json:"filesProcessed"`
+	ProcessingTime time.Duration `json:"processingTimeMs"`
+
+	// Error information (if validation failed)
+	Error string `json:"error,omitempty"`
+
+	// Cache information
+	CacheHit bool   `json:"cacheHit,omitempty"`
+	FileHash string `json:"fileHash,omitempty"`
+}
+    ValidationResult represents the outcome of a NetEX validation
+
+func ValidateContent(content []byte, filename string, options *ValidationOptions) (*ValidationResult, error)
+    ValidateContent validates NetEX content from memory.
+
+    This function validates XML content that is already loaded in memory,
+    useful for processing data from APIs, databases, or other sources without
+    writing to disk first.
+
+    Parameters:
+      - content: NetEX XML content as byte slice
+      - filename: Logical filename for reporting (used in validation results)
+      - options: Validation configuration options
+
+    Returns:
+      - ValidationResult containing all validation issues found
+      - Error if content cannot be parsed or validation fails
+
+    Example:
+
+        xmlContent := []byte(`<?xml version="1.0"?>...`)
+        options := netexvalidator.DefaultValidationOptions().WithCodespace("SE")
+        result, err := netexvalidator.ValidateContent(xmlContent, "in-memory.xml", options)
+
+func ValidateFile(filePath string, options *ValidationOptions) (*ValidationResult, error)
+    ValidateFile validates a single NetEX file using the provided options.
+
+    This is a convenience function that creates a validator instance and
+    validates the specified file in one call. For multiple validations, consider
+    creating a validator instance with New() or NewWithOptions() and reusing it.
+
+    Parameters:
+      - filePath: Path to the NetEX XML file to validate
+      - options: Validation configuration options
+
+    Returns:
+      - ValidationResult containing all validation issues found
+      - Error if file cannot be read or validation fails
+
+    Example:
+
+        options := netexvalidator.DefaultValidationOptions().WithCodespace("NO")
+        result, err := netexvalidator.ValidateFile("timetable.xml", options)
+        if err != nil {
+        	log.Fatal(err)
+        }
+        fmt.Printf("Found %d validation issues\n", len(result.ValidationReportEntries))
+
+func ValidateZip(zipPath string, options *ValidationOptions) (*ValidationResult, error)
+    ValidateZip validates a ZIP dataset containing multiple NetEX files.
+
+    NetEX datasets are often distributed as ZIP files containing multiple XML
+    files with shared data and cross-references. This function validates all XML
+    files in the ZIP and performs cross-file ID validation.
+
+    Parameters:
+      - zipPath: Path to the ZIP file containing NetEX XML files
+      - options: Validation configuration options
+
+    Returns:
+      - ValidationResult with combined results from all files in the ZIP
+      - Error if ZIP cannot be read or validation fails
+
+    Example:
+
+        options := netexvalidator.DefaultValidationOptions().WithCodespace("DK")
+        result, err := netexvalidator.ValidateZip("dataset.zip", options)
+        if err != nil {
+        	log.Fatal(err)
+        }
+        summary := result.Summary()
+        fmt.Printf("Validated %d files, found %d issues\n",
+        	summary.FilesProcessed, summary.TotalIssues)
+
+func (r *ValidationResult) GetEnhancedErrors() []*errors.ValidationError
+    GetEnhancedErrors returns validation issues as enhanced errors with
+    suggestions and context.
+
+func (r *ValidationResult) GetEnhancedErrorsAsText() string
+    GetEnhancedErrorsAsText returns all validation errors formatted as
+    human-readable text.
+
+func (r *ValidationResult) GetErrorsBySeverity() map[types.Severity][]*errors.ValidationError
+    GetErrorsByServerity returns validation errors grouped by severity level.
+
+func (r *ValidationResult) GetErrorsForRule(ruleName string) []*errors.ValidationError
+    GetErrorsForRule returns all validation errors for a specific rule with
+    enhanced information.
+
+func (r *ValidationResult) GetIssuesByFile() map[string][]ValidationReportEntry
+    GetIssuesByFile returns validation issues grouped by filename
+
+func (r *ValidationResult) GetIssuesBySeverity() map[types.Severity][]ValidationReportEntry
+    GetIssuesBySeverity returns validation issues grouped by severity
+
+func (r *ValidationResult) IsValid() bool
+    IsValid returns true if validation passed (no errors or critical issues)
+
+func (r *ValidationResult) String() string
+    String returns a human-readable string representation
+
+func (r *ValidationResult) Summary() ValidationSummary
+    Summary returns a summary of validation results
+
+func (r *ValidationResult) ToHTML() ([]byte, error)
+    ToHTML converts the validation result to HTML format
+
+func (r *ValidationResult) ToJSON() ([]byte, error)
+    ToJSON converts the validation result to JSON format
+
+type ValidationStatistics struct {
+	TotalIssues      int
+	FilesProcessed   int
+	ProcessingTime   time.Duration
+	HasErrors        bool
+	SeverityCounts   map[string]int
+	SeverityPercents map[string]float64
+}
+    ValidationStatistics contains statistical information about validation
+    results
+
+type ValidationSummary struct {
+	TotalIssues      int                    `json:"totalIssues"`
+	FilesProcessed   int                    `json:"filesProcessed"`
+	ProcessingTime   time.Duration          `json:"processingTimeMs"`
+	HasErrors        bool                   `json:"hasErrors"`
+	IssuesBySeverity map[types.Severity]int `json:"issuesBySeverity"`
+}
+    ValidationSummary provides a high-level summary of validation results
+

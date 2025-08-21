@@ -1,0 +1,39 @@
+package rules // import "github.com/theoremus-urban-solutions/netex-validator/rules"
+
+
+TYPES
+
+type Rule struct {
+	Code        string
+	Name        string
+	Message     string
+	Severity    types.Severity
+	XPath       string
+	Category    string
+	Description string
+}
+    Rule represents a single validation rule
+
+type RuleRegistry struct {
+	// Has unexported fields.
+}
+    RuleRegistry manages all validation rules
+
+func NewRuleRegistry(cfg *config.ValidatorConfig) *RuleRegistry
+    NewRuleRegistry creates a new rule registry with all built-in rules
+
+func (r *RuleRegistry) GetAllCategories() []string
+    GetAllCategories returns all available rule categories
+
+func (r *RuleRegistry) GetEnabledRules() []Rule
+    GetEnabledRules returns all enabled rules based on configuration
+
+func (r *RuleRegistry) GetRuleByCode(code string) (Rule, bool)
+    GetRuleByCode returns a specific rule by its code
+
+func (r *RuleRegistry) GetRulesByCategory(category string) []Rule
+    GetRulesByCategory returns all rules in a specific category
+
+func (r *RuleRegistry) WithProfile(profile string) *RuleRegistry
+    WithProfile allows selecting a ruleset profile (e.g., "eu", "custom").
+

@@ -141,18 +141,42 @@ clean: ## Clean build artifacts
 clean-all: clean deps-clean ## Clean everything including caches
 
 # Documentation
-docs: ## Generate documentation
+docs: .FORCE ## Generate documentation
 	@echo "Generating documentation..."
 	@mkdir -p docs/api
-	@$(GO) doc -all . > docs/api.txt
-	@echo "Generating package documentation..."
-	@$(GO) doc . > docs/package.txt
-	@echo "Generating HTML documentation (if godoc is available)..."
-	@which godoc >/dev/null 2>&1 && (godoc -http=:6060 & sleep 3 && curl -s http://localhost:6060/pkg/github.com/theoremus-urban-solutions/netex-validator/ > docs/api/index.html && pkill -f "godoc -http=:6060") || echo "godoc not found - skipping HTML generation"
-	@echo "Documentation generated:"
-	@echo "  - All APIs: docs/api.txt"
-	@echo "  - Package: docs/package.txt"
-	@echo "  - HTML: docs/api/index.html (if godoc was available)"
+	@echo "Generating main validator package documentation..."
+	@$(GO) doc -all ./validator > docs/api/validator.txt || true
+	@echo "Generating validation engine documentation..."
+	@$(GO) doc -all ./validation/engine > docs/api/engine.txt || true
+	@echo "Generating schema validation documentation..."
+	@$(GO) doc -all ./validation/schema > docs/api/schema.txt || true
+	@echo "Generating validation context documentation..."
+	@$(GO) doc -all ./validation/context > docs/api/context.txt || true
+	@echo "Generating ID validation documentation..."
+	@$(GO) doc -all ./validation/ids > docs/api/ids.txt || true
+	@echo "Generating CLI documentation..."
+	@$(GO) doc -all ./cmd/netex-validator > docs/api/cli.txt || true
+	@echo "Generating configuration documentation..."
+	@$(GO) doc -all ./config > docs/api/config.txt || true
+	@echo "Generating logging documentation..."
+	@$(GO) doc -all ./logging > docs/api/logging.txt || true
+	@echo "Generating reporting documentation..."
+	@$(GO) doc -all ./reporting > docs/api/reporting.txt || true
+	@echo "Generating rules documentation..."
+	@$(GO) doc -all ./rules > docs/api/rules.txt || true
+	@echo "Generating types documentation..."
+	@$(GO) doc -all ./types > docs/api/types.txt || true
+	@echo "Generating utilities documentation..."
+	@$(GO) doc -all ./utils > docs/api/utils.txt || true
+	@echo "Generating interfaces documentation..."
+	@$(GO) doc -all ./interfaces > docs/api/interfaces.txt || true
+	@echo "Generating package list..."
+	@$(GO) list -f '{{.ImportPath}}' ./... > docs/packages.txt
+	@echo ""
+	@echo "Documentation generated in docs/:"
+	@echo "  📁 API Documentation:"
+	@ls -1 docs/api/ | sed 's/^/    - docs\/api\//'
+	@echo "  📋 Package list: docs/packages.txt"
 
 docs-serve: ## Start documentation server
 	@echo "Starting documentation server at http://localhost:6060"
@@ -162,7 +186,7 @@ docs-serve: ## Start documentation server
 docs-clean: ## Clean generated documentation
 	@echo "Cleaning documentation..."
 	@rm -rf docs/api/
-	@rm -f docs/api.txt docs/package.txt
+	@rm -f docs/api.txt docs/packages.txt
 
 .FORCE: # Force target to always run
 

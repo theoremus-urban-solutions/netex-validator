@@ -1,0 +1,88 @@
+package config // import "github.com/theoremus-urban-solutions/netex-validator/config"
+
+
+FUNCTIONS
+
+func GenerateDefaultConfigFile(configPath string) error
+    GenerateDefaultConfigFile creates a default configuration file
+
+
+TYPES
+
+type CustomRuleConfig struct {
+	Code     string         `yaml:"code"`
+	Name     string         `yaml:"name"`
+	Message  string         `yaml:"message"`
+	Severity types.Severity `yaml:"severity"`
+	XPath    string         `yaml:"xpath"`
+	Enabled  bool           `yaml:"enabled"`
+}
+    CustomRuleConfig defines a custom validation rule
+
+type OutputConfig struct {
+	Format          string `yaml:"format"`          // json, text, html
+	IncludeDetails  bool   `yaml:"includeDetails"`  // Include detailed location info
+	GroupBySeverity bool   `yaml:"groupBySeverity"` // Group output by severity
+	MaxEntries      int    `yaml:"maxEntries"`      // Maximum entries to output (0 = unlimited)
+}
+    OutputConfig configures output settings
+
+type RuleCategoryConfig struct {
+	Enabled         bool                  `yaml:"enabled"`
+	DefaultSeverity *types.Severity       `yaml:"defaultSeverity,omitempty"`
+	Rules           map[string]RuleConfig `yaml:"rules,omitempty"`
+}
+    RuleCategoryConfig configures an entire category of rules
+
+type RuleConfig struct {
+	Enabled  bool            `yaml:"enabled"`
+	Severity *types.Severity `yaml:"severity,omitempty"`
+	Message  string          `yaml:"message,omitempty"`
+	XPath    string          `yaml:"xpath,omitempty"`
+}
+    RuleConfig configures a specific validation rule
+
+type RulesConfig struct {
+	Categories map[string]RuleCategoryConfig `yaml:"categories"`
+	Custom     []CustomRuleConfig            `yaml:"custom"`
+}
+    RulesConfig contains rule-specific configuration
+
+type ValidatorConfig struct {
+	Validator ValidatorSettings `yaml:"validator"`
+	Rules     RulesConfig       `yaml:"rules"`
+	Output    OutputConfig      `yaml:"output"`
+}
+    ValidatorConfig represents the complete validator configuration
+
+func DefaultConfig() *ValidatorConfig
+    DefaultConfig returns a default configuration
+
+func LoadConfig(configPath string) (*ValidatorConfig, error)
+    LoadConfig loads configuration from a YAML file
+
+func (c *ValidatorConfig) GetCustomRules() []CustomRuleConfig
+    GetCustomRules returns all enabled custom rules
+
+func (c *ValidatorConfig) GetRuleSeverity(ruleCode string, defaultSeverity types.Severity) types.Severity
+    GetRuleSeverity gets the effective severity for a rule
+
+func (c *ValidatorConfig) IsRuleEnabled(ruleCode string) bool
+    IsRuleEnabled checks if a specific rule is enabled
+
+func (c *ValidatorConfig) SaveConfig(configPath string) error
+    SaveConfig saves configuration to a YAML file
+
+func (c *ValidatorConfig) Validate() error
+    Validate validates the configuration
+
+type ValidatorSettings struct {
+	Profile         string `yaml:"profile"`         // e.g., "eu", "custom"
+	MaxFileSize     int64  `yaml:"maxFileSize"`     // Maximum file size in bytes
+	MaxSchemaErrors int    `yaml:"maxSchemaErrors"` // Maximum schema errors to report
+	ConcurrentFiles int    `yaml:"concurrentFiles"` // Number of files to process concurrently
+	EnableCache     bool   `yaml:"enableCache"`     // Enable validation result caching
+	CacheTimeout    int    `yaml:"cacheTimeout"`    // Cache timeout in minutes
+}
+    ValidatorSettings contains general validator settings
+

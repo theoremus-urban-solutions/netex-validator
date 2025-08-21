@@ -1,0 +1,173 @@
+package ids // import "github.com/theoremus-urban-solutions/netex-validator/validation/ids"
+
+
+FUNCTIONS
+
+func NewNetexIdExtractor() interfaces.IdExtractor
+    NewNetexIdExtractor creates a new ID extractor
+
+func NewNetexIdValidator(repository interfaces.IdRepository, extractor interfaces.IdExtractor) interfaces.IdValidator
+    NewNetexIdValidator creates a new ID validator
+
+
+TYPES
+
+type DefaultExternalReferenceValidator struct {
+	// Has unexported fields.
+}
+    DefaultExternalReferenceValidator provides basic external reference
+    validation
+
+func NewDefaultExternalReferenceValidator() *DefaultExternalReferenceValidator
+    NewDefaultExternalReferenceValidator creates a new default external
+    reference validator
+
+func (v *DefaultExternalReferenceValidator) AddIgnoredPattern(pattern string)
+    AddIgnoredPattern adds a pattern that should be ignored (treated as valid)
+
+func (v *DefaultExternalReferenceValidator) AddKnownExternalId(id string)
+    AddKnownExternalId adds a known external ID that should be considered valid
+
+func (v *DefaultExternalReferenceValidator) ValidateReferenceIds(externalIdsToValidate []types.IdVersion) []types.IdVersion
+    ValidateReferenceIds validates external reference IDs
+
+type ExternalReferenceValidator interface {
+	// ValidateReferenceIds returns a set of IDs that are valid according to this external reference validator
+	// The returned IDs will be removed from the unresolved references list
+	ValidateReferenceIds(externalIdsToValidate []types.IdVersion) []types.IdVersion
+}
+    ExternalReferenceValidator validates references to external NetEX objects
+    This interface matches the Java implementation for compatibility
+
+type FrenchExternalReferenceValidator struct {
+	*DefaultExternalReferenceValidator
+}
+    FrenchExternalReferenceValidator provides validation for French NetEX
+    external references
+
+func NewFrenchExternalReferenceValidator() *FrenchExternalReferenceValidator
+    NewFrenchExternalReferenceValidator creates a validator configured for
+    French NetEX datasets
+
+type NetexIdExtractor struct{}
+    NetexIdExtractor extracts NetEX IDs and references from XML content
+
+func (e *NetexIdExtractor) ExtractIds(fileName string, content []byte) ([]types.IdVersion, error)
+    ExtractIds extracts all NetEX IDs from XML content
+
+func (e *NetexIdExtractor) ExtractReferences(fileName string, content []byte) ([]types.IdVersion, error)
+    ExtractReferences extracts all NetEX ID references from XML content
+
+type NetexIdRepository struct {
+	// Has unexported fields.
+}
+    NetexIdRepository manages NetEX ID tracking and validation across files
+
+func NewNetexIdRepository() *NetexIdRepository
+    NewNetexIdRepository creates a new ID repository
+
+func NewNetexIdRepositoryWithIgnorableElements(ignorableElements []string) *NetexIdRepository
+    NewNetexIdRepositoryWithIgnorableElements creates a new ID repository with
+    custom ignorable elements
+
+func (r *NetexIdRepository) AddId(id, version, fileName string) error
+    AddId registers a NetEX ID in the repository
+
+func (r *NetexIdRepository) AddIdWithElementType(id, version, fileName, elementType string) error
+    AddIdWithElementType registers a NetEX ID in the repository with element
+    type information
+
+func (r *NetexIdRepository) AddReference(refId, version, fileName string)
+    AddReference registers a reference to a NetEX ID
+
+func (r *NetexIdRepository) AddSharedNetexIds(reportId string, commonIds []types.IdVersion)
+    AddSharedNetexIds adds shared NetEX IDs for a common file
+
+func (r *NetexIdRepository) Clear()
+    Clear resets the repository
+
+func (r *NetexIdRepository) GetAllIds() map[string]types.IdVersion
+    GetAllIds returns all registered IDs
+
+func (r *NetexIdRepository) GetDuplicateIds() []types.ValidationIssue
+    GetDuplicateIds returns IDs that appear in multiple files
+
+func (r *NetexIdRepository) GetIdsByFile(fileName string) []string
+    GetIdsByFile returns all IDs registered for a specific file
+
+func (r *NetexIdRepository) GetSharedNetexIds(reportId string) map[string]bool
+    GetSharedNetexIds returns shared NetEX IDs for the given report
+
+func (r *NetexIdRepository) IsCommonFile(fileName string) bool
+    IsCommonFile returns true if the file is marked as a common file
+
+func (r *NetexIdRepository) MarkAsCommonFile(fileName string)
+    MarkAsCommonFile marks a file as a common file for special duplicate ID
+    handling
+
+func (r *NetexIdRepository) ValidateIdFormat() []types.ValidationIssue
+    ValidateIdFormat validates NetEX ID format compliance
+
+func (r *NetexIdRepository) ValidateReferences() []types.ValidationIssue
+    ValidateReferences validates all references against registered IDs using
+    Java-compatible algorithm
+
+func (r *NetexIdRepository) ValidateReferencesForReport(reportId string) []types.ValidationIssue
+    ValidateReferencesForReport validates references for a specific report using
+    Java-compatible algorithm
+
+func (r *NetexIdRepository) ValidateVersionConsistencyAcrossFiles() []types.ValidationIssue
+    ValidateVersionConsistencyAcrossFiles checks that the same ID has consistent
+    version across files
+
+func (r *NetexIdRepository) ValidateVersions() []types.ValidationIssue
+    ValidateVersions validates version information on IDs
+
+type NetexIdValidator struct {
+	// Has unexported fields.
+}
+    NetexIdValidator validates NetEX IDs using a repository
+
+func (v *NetexIdValidator) ExtractIds(fileName string, content []byte) error
+    ExtractIds extracts IDs from XML content and registers them
+
+func (v *NetexIdValidator) ExtractReferences(fileName string, content []byte) error
+    ExtractReferences extracts references from XML content and registers them
+
+func (v *NetexIdValidator) GetRepository() interfaces.IdRepository
+    GetRepository returns the underlying ID repository
+
+func (v *NetexIdValidator) ValidateIds() ([]types.ValidationIssue, error)
+    ValidateIds validates all registered IDs and references
+
+type NetexReferenceValidator struct {
+	// Has unexported fields.
+}
+    NetexReferenceValidator validates references between NetEX elements
+
+func NewNetexReferenceValidator(idRepository *NetexIdRepository) *NetexReferenceValidator
+    NewNetexReferenceValidator creates a new reference validator
+
+func (v *NetexReferenceValidator) AddIgnoredReferenceType(referenceType string)
+    AddIgnoredReferenceType adds a reference type to be ignored during
+    validation
+
+func (v *NetexReferenceValidator) IsIgnoredReference(referenceType string) bool
+    IsIgnoredReference checks if a reference type should be ignored
+
+func (v *NetexReferenceValidator) RemoveIgnoredReferenceType(referenceType string)
+    RemoveIgnoredReferenceType removes a reference type from the ignored list
+
+func (v *NetexReferenceValidator) ValidateEntityTypeReferences(elementType string, references []types.IdVersion) []types.ValidationIssue
+    ValidateEntityTypeReferences validates that references are to appropriate
+    entity types
+
+func (v *NetexReferenceValidator) ValidateExternalReferences(fileName string, externalRefs []types.IdVersion) []types.ValidationIssue
+    ValidateExternalReferences validates references to external files
+
+func (v *NetexReferenceValidator) ValidateReferences() []types.ValidationIssue
+    ValidateReferences validates all references in the repository
+
+func (v *NetexReferenceValidator) ValidateVersionConsistency() []types.ValidationIssue
+    ValidateVersionConsistency checks version consistency for references
+

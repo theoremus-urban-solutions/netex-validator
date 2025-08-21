@@ -1,0 +1,130 @@
+package utils // import "github.com/theoremus-urban-solutions/netex-validator/utils"
+
+
+FUNCTIONS
+
+func CalculateFileHash(content []byte) string
+    CalculateFileHash computes SHA256 hash of file content
+
+
+TYPES
+
+type CacheStats struct {
+	Size       int           `json:"size"`
+	MaxSize    int           `json:"maxSize"`
+	Hits       int64         `json:"hits"`
+	Misses     int64         `json:"misses"`
+	Evictions  int64         `json:"evictions"`
+	HitRate    float64       `json:"hitRate"`
+	AverageAge time.Duration `json:"averageAge"`
+}
+    CacheStats provides cache performance statistics
+
+type CachedEntry struct {
+	Result      interface{}
+	CachedAt    time.Time
+	ExpiresAt   time.Time
+	FileHash    string
+	AccessCount int64
+	// Has unexported fields.
+}
+    CachedEntry represents a cached validation result with metadata
+
+type HTTPClientOptions struct {
+	Timeout               time.Duration
+	MaxIdleConns          int
+	MaxIdleConnsPerHost   int
+	IdleConnTimeout       time.Duration
+	TLSHandshakeTimeout   time.Duration
+	ResponseHeaderTimeout time.Duration
+	KeepAlive             time.Duration
+	MaxRetries            int
+	RetryBackoff          time.Duration
+}
+    HTTPClientOptions contains configuration for the optimized HTTP client
+
+func DefaultHTTPClientOptions() *HTTPClientOptions
+    DefaultHTTPClientOptions returns optimized default options for schema
+    downloads
+
+type MemoryCacheOptions struct {
+	MaxEntries int   // Maximum number of cached entries
+	MaxBytes   int64 // Maximum memory usage in bytes (approximate)
+}
+    MemoryCacheOptions configures the memory cache behavior
+
+func DefaultMemoryCacheOptions() *MemoryCacheOptions
+    DefaultMemoryCacheOptions returns sensible defaults for memory caching
+
+type MemoryValidationCache struct {
+	// Has unexported fields.
+}
+    MemoryValidationCache implements validation caching using in-memory storage
+    with LRU eviction
+
+func NewMemoryValidationCache(opts *MemoryCacheOptions) *MemoryValidationCache
+    NewMemoryValidationCache creates a new memory-based validation cache
+
+func (c *MemoryValidationCache) Clear() error
+    Clear removes all cached validation results
+
+func (c *MemoryValidationCache) Get(fileHash string) (interface{}, bool)
+    Get retrieves a cached validation result by file hash
+
+func (c *MemoryValidationCache) Set(fileHash string, result interface{}, ttl time.Duration) error
+    Set stores a validation result in the cache
+
+func (c *MemoryValidationCache) Stats() CacheStats
+    Stats returns cache performance statistics
+
+type OptimizedHTTPClient struct {
+	// Has unexported fields.
+}
+    OptimizedHTTPClient provides a high-performance HTTP client for schema
+    downloads
+
+func NewOptimizedHTTPClient(opts *HTTPClientOptions) *OptimizedHTTPClient
+    NewOptimizedHTTPClient creates a new optimized HTTP client
+
+func (c *OptimizedHTTPClient) Close()
+    Close closes the HTTP client and cleans up resources
+
+func (c *OptimizedHTTPClient) Get(ctx context.Context, url string) (*http.Response, error)
+    Get performs an optimized GET request with retry logic
+
+func (c *OptimizedHTTPClient) GetStats() map[string]interface{}
+    GetStats returns statistics about the HTTP client connections
+
+type ValidationCache interface {
+	Get(fileHash string) (interface{}, bool)
+	Set(fileHash string, result interface{}, ttl time.Duration) error
+	Clear() error
+	Stats() CacheStats
+}
+    ValidationCache provides caching of validation results by file hash
+
+type XPathRuleValidator struct {
+	// Has unexported fields.
+}
+    XPathRuleValidator implements XPath-based validation
+
+func NewXPathRuleValidator(rules []XPathValidationRule) *XPathRuleValidator
+    NewXPathRuleValidator creates a new XPath rule validator
+
+func NewXPathRuleValidatorFromConfig(cfg interface{}) *XPathRuleValidator
+    NewXPathRuleValidatorFromConfig creates a new XPath rule validator from
+    configuration
+
+func (v *XPathRuleValidator) GetRules() []types.ValidationRule
+    GetRules returns the validation rules used by this validator
+
+func (v *XPathRuleValidator) Validate(ctx context.XPathValidationContext) ([]types.ValidationIssue, error)
+    Validate performs XPath validation on the given context
+
+type XPathValidationRule interface {
+	Validate(context context.XPathValidationContext) ([]types.ValidationIssue, error)
+	GetRule() types.ValidationRule
+	GetXPath() string
+}
+    XPathValidationRule represents a single XPath validation rule
+

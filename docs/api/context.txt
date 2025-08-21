@@ -1,0 +1,781 @@
+package context // import "github.com/theoremus-urban-solutions/netex-validator/validation/context"
+
+
+TYPES
+
+type Authority struct {
+	BaseNetexObject
+	XMLName        xml.Name        `xml:"Authority"`
+	Name           string          `xml:"Name"`
+	ShortName      string          `xml:"ShortName"`
+	ContactDetails *ContactDetails `xml:"ContactDetails"`
+}
+    Authority represents a transport authority
+
+type AuthorityRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type AvailabilityCondition struct {
+	BaseNetexObject
+	XMLName  xml.Name `xml:"AvailabilityCondition"`
+	FromDate string   `xml:"FromDate"`
+	ToDate   string   `xml:"ToDate"`
+}
+    AvailabilityCondition represents an availability condition
+
+type BaseNetexObject struct {
+	ID           string        `xml:"id,attr"`
+	Version      string        `xml:"version,attr"`
+	DataLocation *DataLocation `xml:"-"`
+}
+    BaseNetexObject provides common fields for all NetEX objects
+
+func (b *BaseNetexObject) GetDataLocation() *DataLocation
+
+func (b *BaseNetexObject) GetID() string
+
+func (b *BaseNetexObject) GetVersion() string
+
+type BaseValidationContext struct {
+	Codespace          string
+	FileName           string
+	ValidationReportID string
+}
+    BaseValidationContext provides common validation context functionality
+
+func (b *BaseValidationContext) GetCodespace() string
+
+func (b *BaseValidationContext) GetFileName() string
+
+func (b *BaseValidationContext) GetValidationReportID() string
+
+type Block struct {
+	BaseNetexObject
+	XMLName  xml.Name  `xml:"Block"`
+	Name     string    `xml:"Name"`
+	Journeys *Journeys `xml:"journeys"`
+}
+    Block represents a vehicle block
+
+type BlockRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type Blocks struct {
+	Blocks []*Block `xml:"Block"`
+}
+    Blocks contains blocks
+
+type BookingArrangements struct {
+	BookingMethods []string `xml:"BookingMethod"`
+	BookingAccess  string   `xml:"BookingAccess"`
+	BookWhen       string   `xml:"BookWhen"`
+	BookingNote    string   `xml:"BookingNote"`
+}
+    BookingArrangements represents booking arrangements
+
+type BookingContact struct {
+	Phone string `xml:"Phone"`
+	Email string `xml:"Email"`
+	Url   string `xml:"Url"`
+}
+    BookingContact represents booking contact information
+
+type Centroid struct {
+	Location *Location `xml:"Location"`
+}
+    Centroid represents geographic coordinates
+
+type CommonDataRepository struct {
+	// Has unexported fields.
+}
+    CommonDataRepository holds shared data across multiple files
+
+func NewCommonDataRepository() *CommonDataRepository
+    NewCommonDataRepository creates a new common data repository
+
+func (repo *CommonDataRepository) AddSharedOperator(operator *Operator)
+    AddSharedOperator adds an operator to the common data repository
+
+func (repo *CommonDataRepository) AddSharedStopPlace(stopPlace *StopPlace)
+    AddSharedStopPlace adds a stop place to the common data repository
+
+func (repo *CommonDataRepository) GetSharedOperator(id string) *Operator
+    GetSharedOperator gets an operator from the common data repository
+
+func (repo *CommonDataRepository) GetSharedStopPlace(id string) *StopPlace
+    GetSharedStopPlace gets a stop place from the common data repository
+
+type CompositeFrame struct {
+	BaseNetexObject
+	XMLName            xml.Name            `xml:"CompositeFrame"`
+	ValidityConditions *ValidityConditions `xml:"validityConditions"`
+	Frames             *Frames             `xml:"frames"`
+}
+    CompositeFrame represents a NetEX composite frame
+
+type ContactDetails struct {
+	Phone string `xml:"Phone"`
+	Email string `xml:"Email"`
+	Url   string `xml:"Url"`
+}
+    ContactDetails represents contact information
+
+type DataLocation struct {
+	FileName   string `json:"fileName"`
+	LineNumber int    `json:"lineNumber"`
+	XPath      string `json:"xpath"`
+	ElementID  string `json:"elementId"`
+}
+    DataLocation provides location information for validation errors
+
+type DataObjects struct {
+	CompositeFrame *CompositeFrame `xml:"CompositeFrame"`
+	// Direct frames (not wrapped in CompositeFrame)
+	ResourceFrame        *ResourceFrame        `xml:"ResourceFrame"`
+	ServiceFrame         *ServiceFrame         `xml:"ServiceFrame"`
+	TimetableFrame       *TimetableFrame       `xml:"TimetableFrame"`
+	SiteFrame            *SiteFrame            `xml:"SiteFrame"`
+	ServiceCalendarFrame *ServiceCalendarFrame `xml:"ServiceCalendarFrame"`
+	VehicleScheduleFrame *VehicleScheduleFrame `xml:"VehicleScheduleFrame"`
+}
+    DataObjects contains the frames
+
+type DatedServiceJourney struct {
+	BaseNetexObject
+	XMLName           xml.Name           `xml:"DatedServiceJourney"`
+	ServiceJourneyRef *ServiceJourneyRef `xml:"ServiceJourneyRef"`
+	OperatingDayRef   *OperatingDayRef   `xml:"OperatingDayRef"`
+}
+    DatedServiceJourney represents a dated service journey
+
+type DayType struct {
+	BaseNetexObject
+	XMLName xml.Name `xml:"DayType"`
+	Name    string   `xml:"Name"`
+}
+    DayType represents a day type
+
+type DayTypeRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type DayTypes struct {
+	DayTypes    []*DayType    `xml:"DayType"`
+	DayTypeRefs []*DayTypeRef `xml:"DayTypeRef"`
+}
+    DayTypes contains day types
+
+type DeadRun struct {
+	BaseNetexObject
+	XMLName      xml.Name      `xml:"DeadRun"`
+	Name         string        `xml:"Name"`
+	RouteRef     *RouteRef     `xml:"RouteRef"`
+	PassingTimes *PassingTimes `xml:"passingTimes"`
+}
+    DeadRun represents a dead run
+
+type FlexibleLine struct {
+	BaseNetexObject
+	XMLName              xml.Name             `xml:"FlexibleLine"`
+	Name                 string               `xml:"Name"`
+	ShortName            string               `xml:"ShortName"`
+	PublicCode           string               `xml:"PublicCode"`
+	TransportMode        string               `xml:"TransportMode"`
+	TransportSubmode     string               `xml:"TransportSubmode"`
+	FlexibleLineType     string               `xml:"FlexibleLineType"`
+	BookWhen             string               `xml:"BookWhen"`
+	MinimumBookingPeriod string               `xml:"MinimumBookingPeriod"`
+	LatestBookingTime    string               `xml:"LatestBookingTime"`
+	BookingContact       *BookingContact      `xml:"BookingContact"`
+	BookingUrl           string               `xml:"BookingUrl"`
+	BookingArrangements  *BookingArrangements `xml:"bookingArrangements"`
+	OperatorRef          *OperatorRef         `xml:"OperatorRef"`
+	AuthorityRef         *AuthorityRef        `xml:"AuthorityRef"`
+}
+    FlexibleLine represents a flexible transport line
+
+type FlexibleServiceRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type Frames struct {
+	ResourceFrame        *ResourceFrame        `xml:"ResourceFrame"`
+	ServiceFrame         *ServiceFrame         `xml:"ServiceFrame"`
+	TimetableFrame       *TimetableFrame       `xml:"TimetableFrame"`
+	SiteFrame            *SiteFrame            `xml:"SiteFrame"`
+	ServiceCalendarFrame *ServiceCalendarFrame `xml:"ServiceCalendarFrame"`
+	VehicleScheduleFrame *VehicleScheduleFrame `xml:"VehicleScheduleFrame"`
+}
+    Frames contains different types of frames
+
+type GroupOfLines struct {
+	BaseNetexObject
+	XMLName xml.Name `xml:"GroupOfLines"`
+	Name    string   `xml:"Name"`
+}
+    GroupOfLines represents a group of lines
+
+type GroupsOfLines struct {
+	GroupsOfLines []*GroupOfLines `xml:"GroupOfLines"`
+}
+    GroupsOfLines contains groups of lines
+
+type Interchanges struct {
+	ServiceJourneyInterchanges []*ServiceJourneyInterchange `xml:"ServiceJourneyInterchange"`
+}
+    Interchanges contains service journey interchanges
+
+type JAXBValidationContext struct {
+	BaseValidationContext
+	NetexEntities        interface{} // Will be replaced with proper NetEX entity index
+	CommonDataRepository interface{} // Will be replaced with proper repository
+	StopPlaceRepository  interface{} // Will be replaced with proper repository
+	LocalIDMap           map[string]types.IdVersion
+}
+    JAXBValidationContext represents context for object model validation
+
+func NewJAXBValidationContext(reportID, codespace, fileName string, localIDMap map[string]types.IdVersion) *JAXBValidationContext
+
+func (j *JAXBValidationContext) IsCommonFile() bool
+    IsCommonFile returns true if this context represents a common file (shared
+    data)
+
+type JourneyPattern struct {
+	BaseNetexObject
+	XMLName          xml.Name              `xml:"JourneyPattern"`
+	Name             string                `xml:"Name"`
+	RouteRef         *RouteRef             `xml:"RouteRef"`
+	PointsInSequence *StopPointsInSequence `xml:"pointsInSequence"`
+}
+    JourneyPattern represents a journey pattern
+
+type JourneyPatternRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type JourneyPatterns struct {
+	JourneyPatterns        []*JourneyPattern        `xml:"JourneyPattern"`
+	ServiceJourneyPatterns []*ServiceJourneyPattern `xml:"ServiceJourneyPattern"`
+}
+    JourneyPatterns contains journey pattern information
+
+type Journeys struct {
+	VehicleJourneyRefs []*VehicleJourneyRef `xml:"VehicleJourneyRef"`
+}
+    Journeys contains vehicle journey references
+
+type Line struct {
+	BaseNetexObject
+	XMLName               xml.Name               `xml:"Line"`
+	Name                  string                 `xml:"Name"`
+	ShortName             string                 `xml:"ShortName"`
+	PublicCode            string                 `xml:"PublicCode"`
+	TransportMode         string                 `xml:"TransportMode"`
+	TransportSubmode      string                 `xml:"TransportSubmode"`
+	OperatorRef           *OperatorRef           `xml:"OperatorRef"`
+	AuthorityRef          *AuthorityRef          `xml:"AuthorityRef"`
+	RepresentedByGroupRef *RepresentedByGroupRef `xml:"RepresentedByGroupRef"`
+	Presentation          *Presentation          `xml:"Presentation"`
+}
+    Line represents a public transport line
+
+type LineRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type Lines struct {
+	Lines         []*Line         `xml:"Line"`
+	FlexibleLines []*FlexibleLine `xml:"FlexibleLine"`
+}
+    Lines contains line information
+
+type Location struct {
+	Longitude float64 `xml:"Longitude"`
+	Latitude  float64 `xml:"Latitude"`
+}
+    Location represents a geographic location
+
+type NetexObject interface {
+	GetID() string
+	GetVersion() string
+	GetDataLocation() *DataLocation
+}
+    NetexObject represents the base interface for all NetEX elements
+
+type Network struct {
+	BaseNetexObject
+	XMLName       xml.Name       `xml:"Network"`
+	Name          string         `xml:"Name"`
+	AuthorityRef  *AuthorityRef  `xml:"AuthorityRef"`
+	GroupsOfLines *GroupsOfLines `xml:"groupsOfLines"`
+}
+    Network represents a transport network
+
+type Networks struct {
+	Networks []*Network `xml:"Network"`
+}
+    Networks contains network information
+
+type ObjectValidationContext struct {
+	// Basic validation information
+	FileName           string
+	Codespace          string
+	ValidationReportID string
+	IsCommonFile       bool
+
+	// Parsed NetEX data
+	PublicationDelivery *PublicationDelivery
+	Document            *xmlquery.Node
+
+	// Has unexported fields.
+}
+    ObjectValidationContext provides rich context for object model validation
+
+func NewObjectValidationContext(fileName, codespace, reportID string, xmlData []byte, doc *xmlquery.Node) (*ObjectValidationContext, error)
+    NewObjectValidationContext creates a new object validation context
+
+func (ctx *ObjectValidationContext) DataLocation(elementID string) *DataLocation
+    DataLocation creates a data location for an element
+
+func (ctx *ObjectValidationContext) DatedServiceJourneys() []*DatedServiceJourney
+    DatedServiceJourneys returns all dated service journeys
+
+func (ctx *ObjectValidationContext) FlexibleLines() []*FlexibleLine
+    FlexibleLines returns all flexible lines
+
+func (ctx *ObjectValidationContext) GetAuthority(id string) *Authority
+    GetAuthority returns an authority by ID
+
+func (ctx *ObjectValidationContext) GetBlock(id string) *Block
+    GetBlock returns a block by ID
+
+func (ctx *ObjectValidationContext) GetCommonDataRepository() *CommonDataRepository
+    GetCommonDataRepository returns the shared data repository
+
+func (ctx *ObjectValidationContext) GetDatedServiceJourney(id string) *DatedServiceJourney
+    GetDatedServiceJourney returns a dated service journey by ID
+
+func (ctx *ObjectValidationContext) GetDayType(id string) *DayType
+    GetDayType returns a day type by ID
+
+func (ctx *ObjectValidationContext) GetElementByID(id string) NetexObject
+    GetElementByID returns any NetEX element by ID
+
+func (ctx *ObjectValidationContext) GetFlexibleLine(id string) *FlexibleLine
+    GetFlexibleLine returns a flexible line by ID
+
+func (ctx *ObjectValidationContext) GetJourneyPattern(id string) *JourneyPattern
+    GetJourneyPattern returns a journey pattern by ID
+
+func (ctx *ObjectValidationContext) GetLine(id string) *Line
+    GetLine returns a line by ID
+
+func (ctx *ObjectValidationContext) GetOperatingDay(id string) *OperatingDay
+    GetOperatingDay returns an operating day by ID
+
+func (ctx *ObjectValidationContext) GetOperator(id string) *Operator
+    GetOperator returns an operator by ID
+
+func (ctx *ObjectValidationContext) GetQuay(id string) *Quay
+    GetQuay returns a quay by ID
+
+func (ctx *ObjectValidationContext) GetReferencedElement(ref string) NetexObject
+    GetReferencedElement resolves a reference to its target element
+
+func (ctx *ObjectValidationContext) GetRoute(id string) *Route
+    GetRoute returns a route by ID
+
+func (ctx *ObjectValidationContext) GetScheduledStopPoint(id string) *ScheduledStopPoint
+    GetScheduledStopPoint returns a scheduled stop point by ID
+
+func (ctx *ObjectValidationContext) GetServiceJourney(id string) *ServiceJourney
+    GetServiceJourney returns a service journey by ID
+
+func (ctx *ObjectValidationContext) GetStopPlace(id string) *StopPlace
+    GetStopPlace returns a stop place by ID
+
+func (ctx *ObjectValidationContext) HasFrame(frameType string) bool
+    HasFrame checks if a specific frame type exists
+
+func (ctx *ObjectValidationContext) IsReferenceResolved(ref string) bool
+    IsReferenceResolved checks if a reference can be resolved locally
+
+func (ctx *ObjectValidationContext) JourneyPatterns() []*JourneyPattern
+    JourneyPatterns returns all journey patterns
+
+func (ctx *ObjectValidationContext) Lines() []*Line
+    Lines returns all lines
+
+func (ctx *ObjectValidationContext) Operators() []*Operator
+    Operators returns all operators
+
+func (ctx *ObjectValidationContext) Routes() []*Route
+    Routes returns all routes
+
+func (ctx *ObjectValidationContext) ServiceJourneys() []*ServiceJourney
+    ServiceJourneys returns all service journeys
+
+func (ctx *ObjectValidationContext) SetCommonDataRepository(repo *CommonDataRepository)
+    SetCommonDataRepository sets the shared data repository
+
+func (ctx *ObjectValidationContext) StopPlaces() []*StopPlace
+    StopPlaces returns all stop places
+
+type OperatingDay struct {
+	BaseNetexObject
+	XMLName      xml.Name `xml:"OperatingDay"`
+	CalendarDate string   `xml:"CalendarDate"`
+}
+    OperatingDay represents an operating day
+
+type OperatingDayRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type OperatingDays struct {
+	OperatingDays []*OperatingDay `xml:"OperatingDay"`
+}
+    OperatingDays contains operating days
+
+type OperatingPeriod struct {
+	BaseNetexObject
+	XMLName  xml.Name `xml:"OperatingPeriod"`
+	FromDate string   `xml:"FromDate"`
+	ToDate   string   `xml:"ToDate"`
+}
+    OperatingPeriod represents an operating period
+
+type OperatingPeriods struct {
+	OperatingPeriods []*OperatingPeriod `xml:"OperatingPeriod"`
+}
+    OperatingPeriods contains operating periods
+
+type Operator struct {
+	BaseNetexObject
+	XMLName        xml.Name        `xml:"Operator"`
+	Name           string          `xml:"Name"`
+	ShortName      string          `xml:"ShortName"`
+	ContactDetails *ContactDetails `xml:"ContactDetails"`
+}
+    Operator represents a transport operator
+
+type OperatorRef struct {
+	Ref string `xml:"ref,attr"`
+}
+    Reference types
+
+type Organisations struct {
+	Operators   []*Operator  `xml:"Operator"`
+	Authorities []*Authority `xml:"Authority"`
+}
+    Organisations contains operators and authorities
+
+type PassengerStopAssignment struct {
+	BaseNetexObject
+	XMLName               xml.Name               `xml:"PassengerStopAssignment"`
+	ScheduledStopPointRef *ScheduledStopPointRef `xml:"ScheduledStopPointRef"`
+	StopPlaceRef          *StopPlaceRef          `xml:"StopPlaceRef"`
+	QuayRef               *QuayRef               `xml:"QuayRef"`
+}
+    PassengerStopAssignment represents a passenger stop assignment
+
+type PassingTimes struct {
+	TimetabledPassingTimes []*TimetabledPassingTime `xml:"TimetabledPassingTime"`
+}
+    PassingTimes contains timetabled passing times
+
+type PointOnRoute struct {
+	BaseNetexObject
+	XMLName               xml.Name               `xml:"PointOnRoute"`
+	Order                 int                    `xml:"order,attr"`
+	ScheduledStopPointRef *ScheduledStopPointRef `xml:"ScheduledStopPointRef"`
+}
+    PointOnRoute represents a point on a route
+
+type PointsInSequence struct {
+	PointOnRoutes []*PointOnRoute `xml:"PointOnRoute"`
+}
+    PointsInSequence contains points on a route
+
+type Presentation struct {
+	Colour     string `xml:"Colour"`
+	TextColour string `xml:"TextColour"`
+}
+    Presentation represents line presentation information
+
+type PublicationDelivery struct {
+	XMLName              xml.Name     `xml:"PublicationDelivery"`
+	PublicationTimestamp time.Time    `xml:"PublicationTimestamp"`
+	ParticipantRef       string       `xml:"ParticipantRef"`
+	DataObjects          *DataObjects `xml:"dataObjects"`
+}
+    PublicationDelivery represents the root NetEX element
+
+type Quay struct {
+	BaseNetexObject
+	XMLName   xml.Name  `xml:"Quay"`
+	Name      string    `xml:"Name"`
+	ShortName string    `xml:"ShortName"`
+	Centroid  *Centroid `xml:"Centroid"`
+}
+    Quay represents a quay
+
+type QuayRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type Quays struct {
+	Quays []*Quay `xml:"Quay"`
+}
+    Quays contains quays
+
+type RepresentedByGroupRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type ResourceFrame struct {
+	BaseNetexObject
+	XMLName       xml.Name       `xml:"ResourceFrame"`
+	Organisations *Organisations `xml:"organisations"`
+	VehicleTypes  *VehicleTypes  `xml:"vehicleTypes"`
+}
+    ResourceFrame contains organizational data
+
+type Route struct {
+	BaseNetexObject
+	XMLName          xml.Name          `xml:"Route"`
+	Name             string            `xml:"Name"`
+	ShortName        string            `xml:"ShortName"`
+	LineRef          *LineRef          `xml:"LineRef"`
+	DirectionType    string            `xml:"DirectionType"`
+	PointsInSequence *PointsInSequence `xml:"pointsInSequence"`
+}
+    Route represents a route
+
+type RouteRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type Routes struct {
+	Routes []*Route `xml:"Route"`
+}
+    Routes contains route information
+
+type ScheduledStopPoint struct {
+	BaseNetexObject
+	XMLName xml.Name `xml:"ScheduledStopPoint"`
+	Name    string   `xml:"Name"`
+}
+    ScheduledStopPoint represents a scheduled stop point
+
+type ScheduledStopPointRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type ScheduledStopPoints struct {
+	ScheduledStopPoints []*ScheduledStopPoint `xml:"ScheduledStopPoint"`
+}
+    ScheduledStopPoints contains scheduled stop points
+
+type SchemaValidationContext struct {
+	BaseValidationContext
+	FileContent []byte
+}
+    SchemaValidationContext represents context for XML schema validation
+
+func NewSchemaValidationContext(fileName, codespace string, fileContent []byte) *SchemaValidationContext
+
+type ServiceCalendar struct {
+	BaseNetexObject
+	XMLName          xml.Name          `xml:"ServiceCalendar"`
+	FromDate         string            `xml:"FromDate"`
+	ToDate           string            `xml:"ToDate"`
+	OperatingPeriods *OperatingPeriods `xml:"operatingPeriods"`
+}
+    ServiceCalendar represents a service calendar
+
+type ServiceCalendarFrame struct {
+	BaseNetexObject
+	XMLName       xml.Name         `xml:"ServiceCalendarFrame"`
+	Section       *ServiceCalendar `xml:"section,omitempty"` //nolint:staticcheck // XML tag conflict is unavoidable due to Go struct embedding rules
+	DayTypes      *DayTypes        `xml:"dayTypes"`
+	OperatingDays *OperatingDays   `xml:"operatingDays"`
+}
+    ServiceCalendarFrame contains calendar data
+
+type ServiceFrame struct {
+	BaseNetexObject
+	XMLName             xml.Name             `xml:"ServiceFrame"`
+	Networks            *Networks            `xml:"networks"`
+	Lines               *Lines               `xml:"lines"`
+	Routes              *Routes              `xml:"routes"`
+	JourneyPatterns     *JourneyPatterns     `xml:"journeyPatterns"`
+	VehicleJourneys     *VehicleJourneys     `xml:"vehicleJourneys"`
+	ScheduledStopPoints *ScheduledStopPoints `xml:"scheduledStopPoints"`
+	StopAssignments     *StopAssignments     `xml:"stopAssignments"`
+	Interchanges        *Interchanges        `xml:"interchanges"`
+}
+    ServiceFrame contains service-related data
+
+type ServiceJourney struct {
+	BaseNetexObject
+	XMLName            xml.Name            `xml:"ServiceJourney"`
+	Name               string              `xml:"Name"`
+	PrivateCode        string              `xml:"PrivateCode"`
+	TransportMode      string              `xml:"TransportMode"`
+	TransportSubmode   string              `xml:"TransportSubmode"`
+	JourneyPatternRef  *JourneyPatternRef  `xml:"JourneyPatternRef"`
+	LineRef            *LineRef            `xml:"LineRef"`
+	OperatorRef        *OperatorRef        `xml:"OperatorRef"`
+	FlexibleServiceRef *FlexibleServiceRef `xml:"FlexibleServiceRef"`
+	BlockRef           *BlockRef           `xml:"BlockRef"`
+	DayTypes           *DayTypes           `xml:"dayTypes"`
+	PassingTimes       *PassingTimes       `xml:"passingTimes"`
+}
+    ServiceJourney represents a service journey
+
+type ServiceJourneyInterchange struct {
+	BaseNetexObject
+	XMLName               xml.Name               `xml:"ServiceJourneyInterchange"`
+	FromStopPointRef      *ScheduledStopPointRef `xml:"FromStopPointRef"`
+	ToStopPointRef        *ScheduledStopPointRef `xml:"ToStopPointRef"`
+	FromServiceJourneyRef *ServiceJourneyRef     `xml:"FromServiceJourneyRef"`
+	ToServiceJourneyRef   *ServiceJourneyRef     `xml:"ToServiceJourneyRef"`
+	StandardTransferTime  string                 `xml:"StandardTransferTime"`
+}
+    ServiceJourneyInterchange represents an interchange between service journeys
+
+type ServiceJourneyPattern struct {
+	BaseNetexObject
+	XMLName          xml.Name              `xml:"ServiceJourneyPattern"`
+	Name             string                `xml:"Name"`
+	RouteRef         *RouteRef             `xml:"RouteRef"`
+	PointsInSequence *StopPointsInSequence `xml:"pointsInSequence"`
+}
+    ServiceJourneyPattern represents a service journey pattern
+
+type ServiceJourneyRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type SiteFrame struct {
+	BaseNetexObject
+	XMLName    xml.Name    `xml:"SiteFrame"`
+	StopPlaces *StopPlaces `xml:"stopPlaces"`
+}
+    SiteFrame contains stop place data
+
+type StopAssignments struct {
+	PassengerStopAssignments []*PassengerStopAssignment `xml:"PassengerStopAssignment"`
+}
+    StopAssignments contains stop assignments
+
+type StopPlace struct {
+	BaseNetexObject
+	XMLName       xml.Name  `xml:"StopPlace"`
+	Name          string    `xml:"Name"`
+	ShortName     string    `xml:"ShortName"`
+	StopPlaceType string    `xml:"StopPlaceType"`
+	Centroid      *Centroid `xml:"Centroid"`
+	Quays         *Quays    `xml:"quays"`
+}
+    StopPlace represents a stop place
+
+type StopPlaceRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type StopPlaces struct {
+	StopPlaces []*StopPlace `xml:"StopPlace"`
+}
+    StopPlaces contains stop places
+
+type StopPointInJourneyPattern struct {
+	BaseNetexObject
+	XMLName               xml.Name               `xml:"StopPointInJourneyPattern"`
+	Order                 int                    `xml:"order,attr"`
+	ScheduledStopPointRef *ScheduledStopPointRef `xml:"ScheduledStopPointRef"`
+}
+    StopPointInJourneyPattern represents a stop point in a journey pattern
+
+type StopPointInJourneyPatternRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type StopPointsInSequence struct {
+	StopPointInJourneyPatterns []*StopPointInJourneyPattern `xml:"StopPointInJourneyPattern"`
+}
+    StopPointsInSequence contains stop points in a journey pattern
+
+type TimetableFrame struct {
+	BaseNetexObject
+	XMLName         xml.Name         `xml:"TimetableFrame"`
+	VehicleJourneys *VehicleJourneys `xml:"vehicleJourneys"`
+}
+    TimetableFrame contains timetable-related data
+
+type TimetabledPassingTime struct {
+	BaseNetexObject
+	XMLName                      xml.Name                      `xml:"TimetabledPassingTime"`
+	StopPointInJourneyPatternRef *StopPointInJourneyPatternRef `xml:"StopPointInJourneyPatternRef"`
+	ArrivalTime                  string                        `xml:"ArrivalTime"`
+	DepartureTime                string                        `xml:"DepartureTime"`
+	EarliestDepartureTime        string                        `xml:"EarliestDepartureTime"`
+	LatestArrivalTime            string                        `xml:"LatestArrivalTime"`
+}
+    TimetabledPassingTime represents a timetabled passing time
+
+type ValidationContext interface {
+	GetCodespace() string
+	GetFileName() string
+	GetValidationReportID() string
+}
+    ValidationContext represents the context for validation operations
+
+type ValidityConditions struct {
+	AvailabilityConditions []*AvailabilityCondition `xml:"AvailabilityCondition"`
+}
+    ValidityConditions contains validity conditions
+
+type VehicleJourneyRef struct {
+	Ref string `xml:"ref,attr"`
+}
+
+type VehicleJourneys struct {
+	ServiceJourneys      []*ServiceJourney      `xml:"ServiceJourney"`
+	DatedServiceJourneys []*DatedServiceJourney `xml:"DatedServiceJourney"`
+	DeadRuns             []*DeadRun             `xml:"DeadRun"`
+}
+    VehicleJourneys contains service journeys
+
+type VehicleScheduleFrame struct {
+	BaseNetexObject
+	XMLName xml.Name `xml:"VehicleScheduleFrame"`
+	Blocks  *Blocks  `xml:"blocks"`
+}
+    VehicleScheduleFrame contains vehicle schedule data
+
+type VehicleType struct {
+	BaseNetexObject
+	XMLName xml.Name `xml:"VehicleType"`
+	Name    string   `xml:"Name"`
+}
+    VehicleType represents a vehicle type
+
+type VehicleTypes struct {
+	VehicleTypes []*VehicleType `xml:"VehicleType"`
+}
+    VehicleTypes contains vehicle types
+
+type XPathValidationContext struct {
+	BaseValidationContext
+	Document  *xmlquery.Node
+	LocalIDs  map[string]types.IdVersion
+	LocalRefs []types.IdVersion
+}
+    XPathValidationContext represents context for XPath-based validation
+
+func NewXPathValidationContext(fileName, codespace, reportID string, document *xmlquery.Node, localIDs map[string]types.IdVersion, localRefs []types.IdVersion) *XPathValidationContext
+

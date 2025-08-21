@@ -1,0 +1,293 @@
+package engine // import "github.com/theoremus-urban-solutions/netex-validator/validation/engine"
+
+
+FUNCTIONS
+
+func NewDefaultValidationReportEntryFactory() interfaces.ValidationReportEntryFactory
+    NewDefaultValidationReportEntryFactory creates a new default factory
+
+
+TYPES
+
+type BaseObjectValidator struct {
+	// Has unexported fields.
+}
+    BaseObjectValidator provides common functionality for object validators
+
+func NewBaseObjectValidator(name string, rules []types.ValidationRule) *BaseObjectValidator
+    NewBaseObjectValidator creates a new base object validator
+
+func (v *BaseObjectValidator) GetName() string
+    GetName returns the validator name
+
+func (v *BaseObjectValidator) GetRules() []types.ValidationRule
+    GetRules returns the validation rules
+
+type CommonDataCollector struct {
+	// Has unexported fields.
+}
+    CommonDataCollector collects shared data from common files
+
+func NewCommonDataCollector() *CommonDataCollector
+    NewCommonDataCollector creates a new common data collector
+
+func (c *CommonDataCollector) CollectFromFile(ctx *context.ObjectValidationContext) error
+    CollectFromFile collects shared data from common files
+
+func (c *CommonDataCollector) GetCollectedData() interface{}
+    GetCollectedData returns the common data repository
+
+func (c *CommonDataCollector) GetCommonDataRepository() *context.CommonDataRepository
+    GetCommonDataRepository returns the typed common data repository
+
+func (c *CommonDataCollector) GetName() string
+    GetName returns the collector name
+
+func (c *CommonDataCollector) Reset()
+    Reset clears all collected data
+
+type DataCollector interface {
+	// CollectFromFile collects data from a single file validation context
+	CollectFromFile(ctx *context.ObjectValidationContext) error
+
+	// GetCollectedData returns the collected data for cross-file validation
+	GetCollectedData() interface{}
+
+	// GetName returns the name of this data collector
+	GetName() string
+
+	// Reset clears all collected data
+	Reset()
+}
+    DataCollector interface for collecting data during validation
+
+type DataCollectorRegistry struct {
+	// Has unexported fields.
+}
+    DataCollectorRegistry manages multiple data collectors
+
+func NewDataCollectorRegistry() *DataCollectorRegistry
+    NewDataCollectorRegistry creates a new data collector registry
+
+func (r *DataCollectorRegistry) CollectFromAllFiles(ctx *context.ObjectValidationContext) error
+    CollectFromAllFiles runs all collectors on a validation context
+
+func (r *DataCollectorRegistry) GetCollector(name string) DataCollector
+    GetCollector returns a specific data collector
+
+func (r *DataCollectorRegistry) RegisterCollector(collector DataCollector)
+    RegisterCollector adds a data collector to the registry
+
+func (r *DataCollectorRegistry) ResetAll()
+    ResetAll resets all data collectors
+
+type DefaultValidationReportEntryFactory struct{}
+    DefaultValidationReportEntryFactory is the default implementation
+
+func (f *DefaultValidationReportEntryFactory) CreateValidationReportEntry(issue types.ValidationIssue) types.ValidationReportEntry
+    CreateValidationReportEntry creates a validation report entry from an issue
+
+func (f *DefaultValidationReportEntryFactory) TemplateValidationReportEntry(rule types.ValidationRule) types.ValidationReportEntry
+    TemplateValidationReportEntry creates a template entry from a rule
+
+type EnhancedNetexValidatorsRunner struct {
+	// Has unexported fields.
+}
+    EnhancedNetexValidatorsRunner orchestrates NetEX validation with improved
+    architecture
+
+func (r *EnhancedNetexValidatorsRunner) FinalizeIdValidation() ([]types.ValidationIssue, error)
+    FinalizeIdValidation performs cross-file ID validation and returns issues
+
+func (r *EnhancedNetexValidatorsRunner) ValidateContent(fileName, codespace string, content []byte, skipSchema, skipValidators bool) (*types.ValidationReport, error)
+    ValidateContent validates NetEX content directly
+
+func (r *EnhancedNetexValidatorsRunner) ValidateFile(filePath, codespace string, skipSchema, skipValidators bool) (*types.ValidationReport, error)
+    ValidateFile validates a single NetEX file (XML or ZIP)
+
+type EnhancedNetexValidatorsRunnerBuilder struct {
+	// Has unexported fields.
+}
+    EnhancedNetexValidatorsRunnerBuilder builds enhanced validator instances
+
+func NewEnhancedNetexValidatorsRunnerBuilder() *EnhancedNetexValidatorsRunnerBuilder
+    NewEnhancedNetexValidatorsRunnerBuilder creates a new enhanced builder
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) Build() (*EnhancedNetexValidatorsRunner, error)
+    Build creates the EnhancedNetexValidatorsRunner
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithConcurrentFiles(n int) *EnhancedNetexValidatorsRunnerBuilder
+    WithConcurrentFiles sets the number of files to validate concurrently for
+    ZIP datasets
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithDatasetValidators(validators []interfaces.DatasetValidator) *EnhancedNetexValidatorsRunnerBuilder
+    WithDatasetValidators sets the dataset validators
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithIdValidator(validator interfaces.IdValidator) *EnhancedNetexValidatorsRunnerBuilder
+    WithIdValidator sets the ID validator
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithJAXBValidators(validators []interfaces.JAXBValidator) *EnhancedNetexValidatorsRunnerBuilder
+    WithJAXBValidators sets the JAXB validators
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithMaxFindings(limit int) *EnhancedNetexValidatorsRunnerBuilder
+    WithMaxFindings sets a cap on total findings to collect
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithSchemaValidator(validator interfaces.SchemaValidator) *EnhancedNetexValidatorsRunnerBuilder
+    WithSchemaValidator sets the schema validator
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithValidationReportEntryFactory(factory interfaces.ValidationReportEntryFactory) *EnhancedNetexValidatorsRunnerBuilder
+    WithValidationReportEntryFactory sets the report entry factory
+
+func (b *EnhancedNetexValidatorsRunnerBuilder) WithXPathValidators(validators []interfaces.XPathValidator) *EnhancedNetexValidatorsRunnerBuilder
+    WithXPathValidators sets the XPath validators
+
+type EnhancedObjectRunner struct {
+	// Has unexported fields.
+}
+    EnhancedObjectRunner runs object model validation with data collection
+
+func NewEnhancedObjectRunner() *EnhancedObjectRunner
+    NewEnhancedObjectRunner creates a new enhanced object runner
+
+func (r *EnhancedObjectRunner) GetAllValidationRules() []types.ValidationRule
+    GetAllValidationRules returns all validation rules from object validators
+
+func (r *EnhancedObjectRunner) GetCollectedData(collectorName string) interface{}
+    GetCollectedData returns collected data from a specific collector
+
+func (r *EnhancedObjectRunner) RegisterDataCollector(collector DataCollector)
+    RegisterDataCollector adds a custom data collector
+
+func (r *EnhancedObjectRunner) RegisterValidator(validator ObjectValidator)
+    RegisterValidator adds a custom object validator
+
+func (r *EnhancedObjectRunner) SetEnableDataCollection(enabled bool)
+    SetEnableDataCollection enables or disables data collection
+
+func (r *EnhancedObjectRunner) ValidateDataset(files []FileData) ([]types.ValidationIssue, error)
+    ValidateDataset validates a complete dataset with cross-file validation
+
+func (r *EnhancedObjectRunner) ValidateFile(fileName, codespace, reportID string, xmlData []byte, xmlDoc *xmlquery.Node) ([]types.ValidationIssue, error)
+    ValidateFile validates a single file using object model validation
+
+type FileData struct {
+	FileName  string
+	Codespace string
+	ReportID  string
+	Content   []byte
+}
+    FileData represents file data for dataset validation
+
+type NetworkConsistencyValidator struct {
+	*BaseObjectValidator
+}
+    NetworkConsistencyValidator validates network-level consistency using object
+    model
+
+func NewNetworkConsistencyValidator() *NetworkConsistencyValidator
+    NewNetworkConsistencyValidator creates a new network consistency validator
+
+func (v *NetworkConsistencyValidator) Validate(ctx *context.ObjectValidationContext) []types.ValidationIssue
+    Validate performs network consistency validation
+
+type NetworkTopologyCollector struct {
+	// Has unexported fields.
+}
+    NetworkTopologyCollector collects network topology information
+
+func NewNetworkTopologyCollector() *NetworkTopologyCollector
+    NewNetworkTopologyCollector creates a new network topology collector
+
+func (n *NetworkTopologyCollector) CollectFromFile(ctx *context.ObjectValidationContext) error
+    CollectFromFile collects network topology from a file
+
+func (n *NetworkTopologyCollector) GetCollectedData() interface{}
+    GetCollectedData returns the collected topology data
+
+func (n *NetworkTopologyCollector) GetName() string
+    GetName returns the collector name
+
+func (n *NetworkTopologyCollector) GetPatternsForRoute(routeID string) []string
+    GetPatternsForRoute returns journey pattern IDs for a given route
+
+func (n *NetworkTopologyCollector) GetRoutesForLine(lineID string) []string
+    GetRoutesForLine returns route IDs for a given line
+
+func (n *NetworkTopologyCollector) GetStopsForPattern(patternID string) []string
+    GetStopsForPattern returns stop point IDs for a given journey pattern
+
+func (n *NetworkTopologyCollector) Reset()
+    Reset clears all collected data
+
+type ObjectValidator interface {
+	// Validate performs validation using the object model context
+	Validate(ctx *context.ObjectValidationContext) []types.ValidationIssue
+
+	// GetRules returns the validation rules implemented by this validator
+	GetRules() []types.ValidationRule
+
+	// GetName returns the name of this validator
+	GetName() string
+}
+    ObjectValidator defines the interface for object model-based validation
+
+type ObjectValidatorRegistry struct {
+	// Has unexported fields.
+}
+    ObjectValidatorRegistry manages a collection of object validators
+
+func NewObjectValidatorRegistry() *ObjectValidatorRegistry
+    NewObjectValidatorRegistry creates a new object validator registry
+
+func (r *ObjectValidatorRegistry) GetAllRules() []types.ValidationRule
+    GetAllRules returns all validation rules from all registered validators
+
+func (r *ObjectValidatorRegistry) RegisterValidator(validator ObjectValidator)
+    RegisterValidator adds a validator to the registry
+
+func (r *ObjectValidatorRegistry) ValidateAll(ctx *context.ObjectValidationContext) []types.ValidationIssue
+    ValidateAll runs all registered validators
+
+type ServiceFrequencyCollector struct {
+	// Has unexported fields.
+}
+    ServiceFrequencyCollector collects service frequency information for
+    analysis
+
+func NewServiceFrequencyCollector() *ServiceFrequencyCollector
+    NewServiceFrequencyCollector creates a new service frequency collector
+
+func (s *ServiceFrequencyCollector) CollectFromFile(ctx *context.ObjectValidationContext) error
+    CollectFromFile collects service frequency data from a file
+
+func (s *ServiceFrequencyCollector) GetCollectedData() interface{}
+    GetCollectedData returns the collected frequency data
+
+func (s *ServiceFrequencyCollector) GetDailyServiceCount(date, lineID string) int
+    GetDailyServiceCount returns service count for a line on a specific date
+
+func (s *ServiceFrequencyCollector) GetName() string
+    GetName returns the collector name
+
+func (s *ServiceFrequencyCollector) GetServiceCountForLine(lineID string) int
+    GetServiceCountForLine returns the number of services for a line
+
+func (s *ServiceFrequencyCollector) GetServicesForRoute(routeID string) []string
+    GetServicesForRoute returns service journey IDs for a route
+
+func (s *ServiceFrequencyCollector) Reset()
+    Reset clears all collected data
+
+type ServiceJourneyObjectValidator struct {
+	*BaseObjectValidator
+}
+    ServiceJourneyObjectValidator validates service journey business logic using
+    object model
+
+func NewServiceJourneyObjectValidator() *ServiceJourneyObjectValidator
+    NewServiceJourneyObjectValidator creates a new service journey object
+    validator
+
+func (v *ServiceJourneyObjectValidator) Validate(ctx *context.ObjectValidationContext) []types.ValidationIssue
+    Validate performs service journey object validation
+

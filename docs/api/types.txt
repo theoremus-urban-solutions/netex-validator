@@ -1,0 +1,96 @@
+package types // import "github.com/theoremus-urban-solutions/netex-validator/types"
+
+
+TYPES
+
+type DataLocation struct {
+	FileName   string
+	LineNumber int
+	XPath      string
+	ElementID  string
+}
+    DataLocation represents the location of data in an XML document
+
+type IdVersion struct {
+	ID       string
+	Version  string
+	FileName string
+}
+    IdVersion represents a NetEX ID with version information
+
+func NewIdVersion(id, version, fileName string) IdVersion
+    NewIdVersion creates a new IdVersion
+
+type Severity int
+    Severity represents the severity level of a validation issue
+
+const (
+	INFO Severity = iota
+	WARNING
+	ERROR
+	CRITICAL
+)
+func (s Severity) MarshalJSON() ([]byte, error)
+    MarshalJSON encodes severity as its string label (e.g., "ERROR")
+
+func (s Severity) MarshalYAML() (interface{}, error)
+    MarshalYAML implements the yaml.Marshaler interface
+
+func (s Severity) String() string
+
+func (s *Severity) UnmarshalJSON(b []byte) error
+    UnmarshalJSON decodes severity from its string label
+
+func (s *Severity) UnmarshalYAML(unmarshal func(interface{}) error) error
+    UnmarshalYAML implements the yaml.Unmarshaler interface
+
+type ValidationIssue struct {
+	Rule     ValidationRule
+	Location DataLocation
+	Message  string
+	Data     interface{} // Optional additional data
+}
+    ValidationIssue represents a validation finding
+
+type ValidationReport struct {
+	Codespace                        string                  `json:"codespace"`
+	ValidationReportID               string                  `json:"validationReportId"`
+	CreationDate                     time.Time               `json:"creationDate"`
+	ValidationReportEntries          []ValidationReportEntry `json:"validationReportEntries"`
+	NumberOfValidationEntriesPerRule map[string]int64        `json:"numberOfValidationEntriesPerRule"`
+}
+    ValidationReport represents the complete validation report
+
+func NewValidationReport(codespace, reportID string) *ValidationReport
+    NewValidationReport creates a new validation report
+
+func (vr *ValidationReport) AddAllValidationReportEntries(entries []ValidationReportEntry)
+    AddAllValidationReportEntries adds multiple validation report entries
+
+func (vr *ValidationReport) AddValidationReportEntry(entry ValidationReportEntry)
+    AddValidationReportEntry adds a single validation report entry
+
+func (vr *ValidationReport) HasError() bool
+    HasError returns true if the validation report contains any errors or
+    critical issues
+
+func (vr *ValidationReport) MergeReport(other *ValidationReport)
+    MergeReport merges another validation report into this one
+
+type ValidationReportEntry struct {
+	Name     string       `json:"name"`
+	Message  string       `json:"message"`
+	Severity Severity     `json:"severity"`
+	FileName string       `json:"fileName"`
+	Location DataLocation `json:"location"`
+}
+    ValidationReportEntry represents a single entry in a validation report
+
+type ValidationRule struct {
+	Code     string   `yaml:"code"`
+	Name     string   `yaml:"name"`
+	Message  string   `yaml:"message"`
+	Severity Severity `yaml:"severity"`
+}
+    ValidationRule represents a validation rule configuration
+

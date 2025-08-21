@@ -1,0 +1,152 @@
+package logging // import "github.com/theoremus-urban-solutions/netex-validator/logging"
+
+
+FUNCTIONS
+
+func Debug(msg string, args ...any)
+    Debug logs a debug message using the default logger.
+
+func Error(msg string, args ...any)
+    Error logs an error message using the default logger.
+
+func Info(msg string, args ...any)
+    Info logs an info message using the default logger.
+
+func RuleViolation(filename, ruleCode, ruleName, message string, line int)
+    RuleViolation logs rule violation using the default logger.
+
+func SetDefaultLogger(logger *Logger)
+    SetDefaultLogger sets the global default logger.
+
+func ValidationComplete(filename string, duration time.Duration, issuesFound int, isValid bool)
+    ValidationComplete logs validation completion using the default logger.
+
+func ValidationError(filename string, err error)
+    ValidationError logs validation error using the default logger.
+
+func ValidationStart(filename, codespace string)
+    ValidationStart logs validation start using the default logger.
+
+func Warn(msg string, args ...any)
+    Warn logs a warning message using the default logger.
+
+
+TYPES
+
+type LogLevel int
+    LogLevel represents different logging levels.
+
+const (
+	// LevelDebug provides detailed debugging information.
+	LevelDebug LogLevel = iota
+	// LevelInfo provides general informational messages.
+	LevelInfo
+	// LevelWarn provides warning messages for potentially problematic situations.
+	LevelWarn
+	// LevelError provides error messages for serious problems.
+	LevelError
+)
+func (l LogLevel) String() string
+    String returns the string representation of the log level.
+
+func (l LogLevel) ToSlogLevel() slog.Level
+    ToSlogLevel converts LogLevel to slog.Level.
+
+type Logger struct {
+	*slog.Logger
+	// Has unexported fields.
+}
+    Logger provides structured logging capabilities for the NetEX validator.
+
+func GetDefaultLogger() *Logger
+    GetDefaultLogger returns the global default logger.
+
+func NewDebugLogger() *Logger
+    NewDebugLogger creates a logger with debug level and source information.
+
+func NewDefaultLogger() *Logger
+    NewDefaultLogger creates a logger with sensible defaults.
+
+func NewJSONLogger(level LogLevel) *Logger
+    NewJSONLogger creates a logger that outputs JSON format.
+
+func NewLogger(config LoggerConfig) *Logger
+    NewLogger creates a new structured logger with the specified configuration.
+
+func (l *Logger) BatchValidationComplete(fileCount, validFiles, totalIssues int, duration time.Duration)
+    BatchValidationComplete logs batch validation completion.
+
+func (l *Logger) BatchValidationStart(fileCount int)
+    BatchValidationStart logs the start of batch validation.
+
+func (l *Logger) ConfigurationLoaded(configPath string, ruleCount int)
+    ConfigurationLoaded logs successful configuration loading.
+
+func (l *Logger) IsLevelEnabled(level LogLevel) bool
+    IsLevelEnabled checks if a log level is enabled.
+
+func (l *Logger) MemoryUsage(operation string, allocMB, sysMB float64)
+    MemoryUsage logs current memory usage statistics.
+
+func (l *Logger) PerformanceWarning(operation string, duration time.Duration, threshold time.Duration)
+    PerformanceWarning logs a performance warning.
+
+func (l *Logger) RuleViolation(filename, ruleCode, ruleName, message string, line int)
+    RuleViolation logs a validation rule violation.
+
+func (l *Logger) SchemaValidationComplete(filename string, duration time.Duration, valid bool)
+    SchemaValidationComplete logs schema validation completion.
+
+func (l *Logger) SchemaValidationStart(filename string)
+    SchemaValidationStart logs the start of schema validation.
+
+func (l *Logger) ValidationComplete(filename string, duration time.Duration, issuesFound int, isValid bool)
+    ValidationComplete logs the completion of a validation operation.
+
+func (l *Logger) ValidationError(filename string, err error)
+    ValidationError logs a validation error.
+
+func (l *Logger) ValidationStart(filename, codespace string)
+    ValidationStart logs the start of a validation operation.
+
+func (l *Logger) WithContext(ctx context.Context) *Logger
+    WithContext returns a logger with context values.
+
+func (l *Logger) WithDuration(operation string, duration time.Duration) *Logger
+    WithDuration returns a logger with duration context.
+
+func (l *Logger) WithError(err error) *Logger
+    WithError returns a logger with error context.
+
+func (l *Logger) WithFile(filename string) *Logger
+    WithFile returns a logger with file context.
+
+func (l *Logger) WithMetrics(filesProcessed, issuesFound int, processingTime time.Duration) *Logger
+    WithMetrics returns a logger with performance metrics.
+
+func (l *Logger) WithRule(ruleCode, ruleName string) *Logger
+    WithRule returns a logger with validation rule context.
+
+func (l *Logger) WithValidation(validationID, codespace string) *Logger
+    WithValidation returns a logger with validation context.
+
+func (l *Logger) XPathValidationComplete(filename string, duration time.Duration, violationCount int)
+    XPathValidationComplete logs XPath validation completion.
+
+func (l *Logger) XPathValidationStart(filename string, ruleCount int)
+    XPathValidationStart logs the start of XPath rule validation.
+
+type LoggerConfig struct {
+	// Level sets the minimum log level.
+	Level LogLevel
+	// Format specifies the output format ("json" or "text").
+	Format string
+	// Output specifies the output destination.
+	Output io.Writer
+	// IncludeSource adds source code information to log entries.
+	IncludeSource bool
+	// Component identifies the logging component.
+	Component string
+}
+    LoggerConfig holds configuration for logger creation.
+

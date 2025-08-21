@@ -4,7 +4,11 @@
       "Bash(gh run list:*)",
       "Bash(go test:*)",
       "Bash(go:*)",
-      "Bash(timeout 30 go test:*)"
+      "Bash(timeout 30 go test:*)",
+      "Bash(make:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "ask": []

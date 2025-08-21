@@ -1,0 +1,142 @@
+package schema // import "github.com/theoremus-urban-solutions/netex-validator/validation/schema"
+
+
+VARIABLES
+
+var DefaultSchemaVersions = map[string]*NetEXSchemaInfo{
+	"1.0": {
+		Version: "1.0",
+		SchemaURLs: map[string]string{
+			"netex_publication": "http://www.netex.org.uk/schema/1.0/xsd/netex_publication.xsd",
+			"NeTEx_publication": "http://www.netex.org.uk/schema/1.0/xsd/NeTEx_publication.xsd",
+		},
+	},
+	"1.1": {
+		Version: "1.1",
+		SchemaURLs: map[string]string{
+			"netex_publication": "http://www.netex.org.uk/schema/1.1/xsd/netex_publication.xsd",
+			"NeTEx_publication": "http://www.netex.org.uk/schema/1.1/xsd/NeTEx_publication.xsd",
+		},
+	},
+	"1.2.2": {
+		Version: "1.2.2",
+		SchemaURLs: map[string]string{
+			"netex_publication": "http://www.netex.org.uk/schema/1.2.2/xsd/netex_publication.xsd",
+			"NeTEx_publication": "http://www.netex.org.uk/schema/1.2.2/xsd/NeTEx_publication.xsd",
+		},
+	},
+	"1.4": {
+		Version: "1.4",
+		SchemaURLs: map[string]string{
+			"netex_publication": "https://raw.githubusercontent.com/NeTEx-CEN/NeTEx/master/xsd/netex_publication.xsd",
+			"NeTEx_publication": "https://raw.githubusercontent.com/NeTEx-CEN/NeTEx/master/xsd/NeTEx_publication.xsd",
+		},
+	},
+}
+    DefaultSchemaVersions contains known NetEX schema versions and their URLs
+
+
+TYPES
+
+type CachedSchema struct {
+	FilePath string
+	Version  string
+	URL      string
+	Content  []byte
+	CachedAt time.Time
+	LastUsed time.Time
+}
+    CachedSchema represents a cached XSD schema
+
+type NetEXSchemaInfo struct {
+	Version    string
+	SchemaURLs map[string]string // schema name -> URL
+}
+    NetEXSchemaInfo contains information about NetEX schema versions
+
+type SchemaManager struct {
+	// Has unexported fields.
+}
+    SchemaManager manages NetEX schema download, caching, and validation
+
+func NewSchemaManager(cacheDir string) *SchemaManager
+    NewSchemaManager creates a new schema manager
+
+func (sm *SchemaManager) ClearCache() error
+    ClearCache clears all cached schemas
+
+func (sm *SchemaManager) Close() error
+    Close closes the schema manager and cleans up resources
+
+func (sm *SchemaManager) DetectSchemaVersion(xmlContent []byte) (string, error)
+    DetectSchemaVersion detects the NetEX schema version from XML content
+
+func (sm *SchemaManager) GetCacheStats() map[string]interface{}
+    GetCacheStats returns statistics about the schema cache
+
+func (sm *SchemaManager) GetSchema(version string) (*CachedSchema, error)
+    GetSchema retrieves a schema for the given version, downloading if necessary
+
+func (sm *SchemaManager) SetHttpTimeout(timeout time.Duration)
+    SetHttpTimeout sets the HTTP timeout for schema downloads
+
+func (sm *SchemaManager) SetMaxCacheAge(maxAge time.Duration)
+    SetMaxCacheAge sets the maximum age for cached schemas
+
+func (sm *SchemaManager) SetNetworkEnabled(enabled bool)
+    SetNetworkEnabled enables or disables network access for schema download
+
+func (sm *SchemaManager) ValidateWithSchema(xmlContent []byte, schema *CachedSchema) error
+    ValidateWithSchema validates XML content against a schema
+
+type XSDSchema struct {
+	Version   string
+	Content   []byte
+	URL       string
+	CachedAt  time.Time
+	ExpiresAt time.Time
+}
+    XSDSchema represents a cached XSD schema with metadata.
+
+type XSDValidationOptions struct {
+	// AllowNetworkDownload enables downloading schemas from remote URLs
+	AllowNetworkDownload bool
+	// CacheDirectory specifies where to cache downloaded schemas
+	CacheDirectory string
+	// CacheExpiryHours sets how long cached schemas remain valid
+	CacheExpiryHours int
+	// StrictMode fails validation on any schema-related errors
+	StrictMode bool
+	// MaxSchemaSize limits the size of schema files (in bytes)
+	MaxSchemaSize int64
+	// HttpTimeoutSeconds controls the schema download timeout in seconds
+	HttpTimeoutSeconds int
+	// UseLibxml2 enables libxml2-backed XSD validation when the build has libxml2 bindings
+	UseLibxml2 bool
+}
+    XSDValidationOptions configures XSD validation behavior.
+
+func DefaultXSDValidationOptions() *XSDValidationOptions
+    DefaultXSDValidationOptions returns sensible defaults for XSD validation.
+
+type XSDValidator struct {
+	// Has unexported fields.
+}
+    XSDValidator provides XML Schema (XSD) validation capabilities for NetEX
+    files.
+
+func NewXSDValidator(options *XSDValidationOptions) (*XSDValidator, error)
+    NewXSDValidator creates a new XSD validator instance.
+
+func (v *XSDValidator) ClearCache()
+    ClearCache clears the in-memory schema cache.
+
+func (v *XSDValidator) GetCacheStats() map[string]interface{}
+    GetCacheStats returns statistics about the schema cache.
+
+func (v *XSDValidator) GetSupportedVersions() []string
+    GetSupportedVersions returns the list of supported NetEX versions.
+
+func (v *XSDValidator) ValidateXML(xmlContent []byte, filename string) ([]*errors.ValidationError, error)
+    ValidateXML performs XSD validation on the provided XML content.
+
