@@ -186,12 +186,7 @@ func TestConcurrentValidation_DeadlockDetection(t *testing.T) {
 
 		var wg sync.WaitGroup
 		timeout := time.After(30 * time.Second)
-		done := make(chan bool)
-
-		go func() {
-			wg.Wait()
-			done <- true
-		}()
+		done := make(chan bool, 1)
 
 		for i := 0; i < numWorkers; i++ {
 			wg.Add(1)
@@ -220,6 +215,11 @@ func TestConcurrentValidation_DeadlockDetection(t *testing.T) {
 				}
 			}(i)
 		}
+
+		go func() {
+			wg.Wait()
+			done <- true
+		}()
 
 		select {
 		case <-done:

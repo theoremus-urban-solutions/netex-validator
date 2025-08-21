@@ -446,12 +446,13 @@ func (v *NetexValidator) validateContentWithCaching(content []byte, filename str
 		// Check cache first
 		if cachedInterface, found := v.validationCache.Get(fileHash); found {
 			if cachedResult, ok := cachedInterface.(*ValidationResult); ok {
-				// Update timing and cache info
-				cachedResult.ProcessingTime = time.Since(startTime)
-				cachedResult.CacheHit = true
-				cachedResult.FileHash = fileHash
+				// Create a copy to avoid concurrent modification of cached result
+				resultCopy := *cachedResult
+				resultCopy.ProcessingTime = time.Since(startTime)
+				resultCopy.CacheHit = true
+				resultCopy.FileHash = fileHash
 
-				return cachedResult, nil
+				return &resultCopy, nil
 			}
 		}
 	}
