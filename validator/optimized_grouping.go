@@ -444,7 +444,9 @@ func (r *ValidationResult) calculateNetEXStatistics() NetEXStatistics {
 	}
 
 	merged := MergeStatistics(allStats)
-	merged.TotalFiles = r.FilesProcessed
+	if merged.TotalFiles == 0 {
+		merged.TotalFiles = r.FilesProcessed
+	}
 	return merged
 }
 

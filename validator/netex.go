@@ -38,6 +38,7 @@
 package validator
 
 import (
+	"archive/zip"
 	"fmt"
 	"io"
 	"os"
@@ -403,6 +404,15 @@ func (v *NetexValidator) ValidateZip(zipPath string) (*ValidationResult, error) 
 		}, nil
 	}
 
+	// Extract raw content from ZIP for statistics before validation
+	rawContents, err := v.extractZipContents(zipPath)
+	if err != nil {
+		return &ValidationResult{
+			Error:        fmt.Sprintf("failed to extract ZIP contents: %v", err),
+			CreationDate: time.Now(),
+		}, nil
+	}
+
 	// Use the validator's built-in ZIP support
 	report, err := v.runner.ValidateFile(zipPath, v.codespace, false, false)
 	if err != nil {
@@ -415,7 +425,45 @@ func (v *NetexValidator) ValidateZip(zipPath string) (*ValidationResult, error) 
 	// Convert to result format
 	result := v.createValidationResultFromReport(report, filepath.Base(zipPath), startTime)
 
+	// Store raw content for statistics extraction
+	for fileName, content := range rawContents {
+		result.SetRawContent(fileName, content)
+	}
+
 	return result, nil
+}
+
+// extractZipContents extracts raw XML content from ZIP files for statistics
+func (v *NetexValidator) extractZipContents(zipPath string) (map[string][]byte, error) {
+	zr, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open zip: %w", err)
+	}
+	defer func() { _ = zr.Close() }()
+
+	contents := make(map[string][]byte)
+
+	for _, f := range zr.File {
+		// Only process XML files
+		if strings.ToLower(filepath.Ext(f.Name)) != ".xml" {
+			continue
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			continue // Skip files that can't be opened
+		}
+
+		content, err := io.ReadAll(rc)
+		_ = rc.Close()
+		if err != nil {
+			continue // Skip files that can't be read
+		}
+
+		contents[filepath.Base(f.Name)] = content
+	}
+
+	return contents, nil
 }
 
 // ValidateReader validates NetEX content from an io.Reader
@@ -472,6 +520,9 @@ func (v *NetexValidator) validateContentWithCaching(content []byte, filename str
 	result.FilesProcessed = 1
 	result.CacheHit = cacheHit
 	result.FileHash = fileHash
+
+	// Store raw content for statistics extraction
+	result.SetRawContent(filename, content)
 
 	// Cache the result if caching is enabled
 	if v.validationCache != nil && fileHash != "" {
