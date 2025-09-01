@@ -117,8 +117,14 @@ func (r *ValidationResult) GetIssuesBySeverity() map[types.Severity][]Validation
 	return result
 }
 
-// ToJSON converts the validation result to JSON format
+// ToJSON converts the validation result to grouped JSON format by default
 func (r *ValidationResult) ToJSON() ([]byte, error) {
+	// Use grouped format by default for better user display
+	return r.ToGroupedJSON()
+}
+
+// ToFlatJSON converts the validation result to flat JSON format (original format)
+func (r *ValidationResult) ToFlatJSON() ([]byte, error) {
 	return json.MarshalIndent(r, "", "  ")
 }
 

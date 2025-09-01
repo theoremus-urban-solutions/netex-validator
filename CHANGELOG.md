@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2025-09-01
+
+### Added
+- Grouped JSON output format for better user experience
+- Consistent grouping between HTML and JSON reports
+- JSON output now groups validation issues by:
+  - File: Issues organized by source file
+  - Severity: Issues organized by severity level (Critical/Error/Warning/Info)
+  - Rule: Issues organized by validation rule name
+- Enhanced JSON statistics with top issues and severity percentages
+- Backwards compatibility with flat JSON format via ToFlatJSON() method
+
+### Changed
+- JSON output now uses grouped format by default
+- Improved consistency between HTML and JSON report structures
+
 ### Added
 - Initial release of NetEX Validator
 - Support for NetEX XML validation against EU NeTEx Profile
