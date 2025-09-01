@@ -8,6 +8,11 @@ import (
 	"github.com/theoremus-urban-solutions/netex-validator/types"
 )
 
+const (
+	// Constants for string literals used multiple times
+	unknownFileName = "Unknown"
+)
+
 // GroupedJSONResult represents the JSON output with grouping similar to HTML report
 type GroupedJSONResult struct {
 	// Metadata
@@ -17,8 +22,8 @@ type GroupedJSONResult struct {
 	GeneratedAt        time.Time `json:"generatedAt"`
 
 	// Summary and statistics (consistent with HTML)
-	Summary    ValidationSummary             `json:"summary"`
-	Statistics map[string]interface{}        `json:"statistics"`
+	Summary    ValidationSummary      `json:"summary"`
+	Statistics map[string]interface{} `json:"statistics"`
 
 	// Original flat list (for backwards compatibility)
 	ValidationReportEntries []ValidationReportEntry `json:"validationReportEntries"`
@@ -48,7 +53,7 @@ func (r *ValidationResult) createGroupedJSON() *GroupedJSONResult {
 	for _, entry := range r.ValidationReportEntries {
 		fileName := entry.FileName
 		if fileName == "" {
-			fileName = "Unknown"
+			fileName = unknownFileName
 		}
 		groupedByFile[fileName] = append(groupedByFile[fileName], entry)
 	}
@@ -93,18 +98,18 @@ func (r *ValidationResult) createGroupedJSON() *GroupedJSONResult {
 // calculateStatistics calculates statistics consistent with HTML report
 func (r *ValidationResult) calculateStatistics(issuesBySeverity map[string][]ValidationReportEntry) map[string]interface{} {
 	stats := make(map[string]interface{})
-	
+
 	// Total issues
 	totalIssues := len(r.ValidationReportEntries)
 	stats["totalIssues"] = totalIssues
 	stats["filesProcessed"] = r.FilesProcessed
 	stats["processingTimeMs"] = r.ProcessingTime.Milliseconds()
 	stats["hasErrors"] = !r.IsValid()
-	
+
 	// Severity counts
 	severityCounts := make(map[string]int)
 	severityPercents := make(map[string]float64)
-	
+
 	for severity, issues := range issuesBySeverity {
 		count := len(issues)
 		severityCounts[severity] = count
@@ -112,10 +117,10 @@ func (r *ValidationResult) calculateStatistics(issuesBySeverity map[string][]Val
 			severityPercents[severity] = float64(count) / float64(totalIssues) * 100
 		}
 	}
-	
+
 	stats["severityCounts"] = severityCounts
 	stats["severityPercents"] = severityPercents
-	
+
 	// Files with issues
 	filesWithIssues := make(map[string]bool)
 	for _, entry := range r.ValidationReportEntries {
@@ -124,35 +129,35 @@ func (r *ValidationResult) calculateStatistics(issuesBySeverity map[string][]Val
 		}
 	}
 	stats["filesWithIssues"] = len(filesWithIssues)
-	
+
 	// Most common issues (top 5 rules)
 	ruleCounts := make(map[string]int)
 	for _, entry := range r.ValidationReportEntries {
 		ruleCounts[entry.Name]++
 	}
-	
+
 	type ruleCount struct {
 		Rule  string `json:"rule"`
 		Count int    `json:"count"`
 	}
-	
+
 	var topIssues []ruleCount
 	for rule, count := range ruleCounts {
 		topIssues = append(topIssues, ruleCount{Rule: rule, Count: count})
 	}
-	
+
 	// Sort by count descending
 	sort.Slice(topIssues, func(i, j int) bool {
 		return topIssues[i].Count > topIssues[j].Count
 	})
-	
+
 	// Keep top 5
 	if len(topIssues) > 5 {
 		topIssues = topIssues[:5]
 	}
-	
+
 	stats["topIssues"] = topIssues
-	
+
 	return stats
 }
 

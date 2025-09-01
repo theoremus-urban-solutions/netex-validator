@@ -9,6 +9,11 @@ import (
 	"github.com/theoremus-urban-solutions/netex-validator/types"
 )
 
+const (
+	errorSeverityText   = "Error"
+	warningSeverityText = "Warning"
+)
+
 func TestHTMLReporter_GenerateHTML(t *testing.T) {
 	reporter := NewHTMLReporter()
 
@@ -379,12 +384,12 @@ func TestHTMLReporter_TemplateDataPreparation(t *testing.T) {
 	})
 
 	t.Run("Issues grouped by severity", func(t *testing.T) {
-		errorIssues := templateData.IssuesBySeverity["Error"]
+		errorIssues := templateData.IssuesBySeverity[errorSeverityText]
 		if len(errorIssues) != 2 {
 			t.Errorf("Expected 2 error issues, got %d", len(errorIssues))
 		}
 
-		warningIssues := templateData.IssuesBySeverity["Warning"]
+		warningIssues := templateData.IssuesBySeverity[warningSeverityText]
 		if len(warningIssues) != 1 {
 			t.Errorf("Expected 1 warning issue, got %d", len(warningIssues))
 		}
@@ -403,17 +408,17 @@ func TestHTMLReporter_TemplateDataPreparation(t *testing.T) {
 	})
 
 	t.Run("Severity statistics", func(t *testing.T) {
-		if templateData.Statistics.SeverityCounts["Error"] != 2 {
-			t.Errorf("Expected 2 error issues in stats, got %d", templateData.Statistics.SeverityCounts["Error"])
+		if templateData.Statistics.SeverityCounts[errorSeverityText] != 2 {
+			t.Errorf("Expected 2 error issues in stats, got %d", templateData.Statistics.SeverityCounts[errorSeverityText])
 		}
 
-		if templateData.Statistics.SeverityCounts["Warning"] != 1 {
-			t.Errorf("Expected 1 warning issue in stats, got %d", templateData.Statistics.SeverityCounts["Warning"])
+		if templateData.Statistics.SeverityCounts[warningSeverityText] != 1 {
+			t.Errorf("Expected 1 warning issue in stats, got %d", templateData.Statistics.SeverityCounts[warningSeverityText])
 		}
 
 		// Check percentages (with tolerance for floating point precision)
 		expectedErrorPercent := 2.0 / 3.0 * 100 // ~66.67%
-		actualErrorPercent := templateData.Statistics.SeverityPercents["Error"]
+		actualErrorPercent := templateData.Statistics.SeverityPercents[errorSeverityText]
 		tolerance := 0.01
 		if actualErrorPercent < expectedErrorPercent-tolerance || actualErrorPercent > expectedErrorPercent+tolerance {
 			t.Errorf("Expected error percentage %.2f, got %.2f", expectedErrorPercent, actualErrorPercent)
@@ -422,14 +427,14 @@ func TestHTMLReporter_TemplateDataPreparation(t *testing.T) {
 
 	t.Run("Severity keys filtering", func(t *testing.T) {
 		// Should only contain severities that have issues
-		expectedKeys := []string{"Error", "Warning"}
+		expectedKeys := []string{errorSeverityText, warningSeverityText}
 		if len(templateData.SeverityKeys) != len(expectedKeys) {
 			t.Errorf("Expected %d severity keys, got %d", len(expectedKeys), len(templateData.SeverityKeys))
 		}
 
 		// Should not contain INFO or CRITICAL since there are no such issues
 		for _, key := range templateData.SeverityKeys {
-			if key != "Error" && key != "Warning" {
+			if key != errorSeverityText && key != warningSeverityText {
 				t.Errorf("Unexpected severity key: %s", key)
 			}
 		}
