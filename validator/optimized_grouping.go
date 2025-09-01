@@ -168,10 +168,10 @@ func (r *ValidationResult) createOptimizedGrouping() *OptimizedGroupedResult {
 			Info:     info,
 		},
 		FilesProcessed: r.FilesProcessed,
-		ProcessingTime:          r.ProcessingTime,
-		CacheHit:                r.CacheHit,
-		FileHash:                r.FileHash,
-		Statistics:              statistics,
+		ProcessingTime: r.ProcessingTime,
+		CacheHit:       r.CacheHit,
+		FileHash:       r.FileHash,
+		Statistics:     statistics,
 	}
 }
 

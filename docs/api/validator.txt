@@ -41,33 +41,12 @@ Output formats include JSON, HTML (with interactive interface), and plain text.
 
 TYPES
 
-type GroupedJSONResult struct {
-	// Metadata
-	Codespace          string    `json:"codespace"`
-	ValidationReportID string    `json:"validationReportId"`
-	CreationDate       time.Time `json:"creationDate"`
-	GeneratedAt        time.Time `json:"generatedAt"`
-
-	// Summary and statistics (consistent with HTML)
-	Summary    ValidationSummary      `json:"summary"`
-	Statistics map[string]interface{} `json:"statistics"`
-
-	// Original flat list (for backwards compatibility)
-	ValidationReportEntries []ValidationReportEntry `json:"validationReportEntries"`
-
-	// Grouped views (matching HTML report tabs)
-	GroupedByFile     map[string][]ValidationReportEntry `json:"groupedByFile"`
-	GroupedBySeverity map[string][]ValidationReportEntry `json:"groupedBySeverity"`
-	GroupedByRule     map[string][]ValidationReportEntry `json:"groupedByRule"`
-
-	// Processing info
-	FilesProcessed int           `json:"filesProcessed"`
-	ProcessingTime time.Duration `json:"processingTimeMs"`
-	CacheHit       bool          `json:"cacheHit,omitempty"`
-	FileHash       string        `json:"fileHash,omitempty"`
+type FileIssueDetail struct {
+	Count       int      `json:"count"`
+	ElementIDs  []string `json:"elementIds,omitempty"`
+	LineNumbers []int    `json:"lineNumbers,omitempty"`
 }
-    GroupedJSONResult represents the JSON output with grouping similar to HTML
-    report
+    FileIssueDetail contains issue details for a specific file
 
 type HTMLReporter struct {
 	// Has unexported fields.
@@ -91,6 +70,57 @@ type HTMLTemplateData struct {
 	GeneratedAt      time.Time
 }
     HTMLTemplateData contains all data needed for HTML template
+
+type IDIssueGroup struct {
+	ID            string   `json:"id"`
+	Count         int      `json:"count"`
+	AffectedFiles []string `json:"affectedFiles"`
+	Context       string   `json:"context,omitempty"` // e.g., "missing version '1'"
+}
+    IDIssueGroup contains issues grouped by problematic NetEX ID
+
+type NetEXStatistics struct {
+	// Core transport elements
+	OperatorCount       int `json:"operatorCount"`
+	LineCount           int `json:"lineCount"`
+	RouteCount          int `json:"routeCount"`
+	ServiceJourneyCount int `json:"serviceJourneyCount"`
+	StopPlaceCount      int `json:"stopPlaceCount"`
+	StopPointCount      int `json:"stopPointCount"`
+
+	// Timetabling
+	TimetabledPassingTimeCount int `json:"timetabledPassingTimeCount"`
+	DayTypeCount               int `json:"dayTypeCount"`
+	ServiceCalendarCount       int `json:"serviceCalendarCount"`
+
+	// Network structure
+	RoutePointCount     int `json:"routePointCount"`
+	RouteLinkCount      int `json:"routeLinkCount"`
+	JourneyPatternCount int `json:"journeyPatternCount"`
+
+	// Fare and accessibility
+	FareZoneCount      int `json:"fareZoneCount"`
+	TariffZoneCount    int `json:"tariffZoneCount"`
+	AccessibilityCount int `json:"accessibilityCount"`
+
+	// Infrastructure
+	QuayCount     int `json:"quayCount"`
+	EntranceCount int `json:"entranceCount"`
+	PathLinkCount int `json:"pathLinkCount"`
+
+	// Total counts
+	TotalElements int `json:"totalElements"`
+	TotalFiles    int `json:"totalFiles"`
+}
+    NetEXStatistics provides counts of key NetEX elements similar to GTFS
+    statistics
+
+func ExtractStatistics(xmlContent []byte, fileName string) NetEXStatistics
+    ExtractStatistics analyzes the XML content and extracts NetEX element
+    statistics
+
+func MergeStatistics(stats []NetEXStatistics) NetEXStatistics
+    MergeStatistics combines statistics from multiple files
 
 type NetexSchemaValidatorAdapter struct {
 	// Has unexported fields.
@@ -170,6 +200,85 @@ func (v *NetexValidator) ValidateReader(reader io.Reader, filename string) (*Val
 
 func (v *NetexValidator) ValidateZip(zipPath string) (*ValidationResult, error)
     ValidateZip validates a ZIP dataset using this validator instance
+
+type OptimizedGroupedResult struct {
+	// Metadata
+	Codespace          string    `json:"codespace"`
+	ValidationReportID string    `json:"validationReportId"`
+	CreationDate       time.Time `json:"creationDate"`
+	GeneratedAt        time.Time `json:"generatedAt"`
+
+	// High-level summary
+	Summary OptimizedSummary `json:"summary"`
+
+	// Optimized grouped notices
+	Notices OptimizedNotices `json:"notices"`
+
+	// Processing info
+	FilesProcessed int           `json:"filesProcessed"`
+	ProcessingTime time.Duration `json:"processingTimeMs"`
+	CacheHit       bool          `json:"cacheHit,omitempty"`
+	FileHash       string        `json:"fileHash,omitempty"`
+
+	// NetEX element statistics
+	Statistics NetEXStatistics `json:"statistics,omitempty"`
+}
+    OptimizedGroupedResult represents a highly optimized grouped validation
+    result. This format reduces repetitive notices by intelligently grouping
+    similar issues, showing counts and affected files instead of individual
+    duplicates.
+
+type OptimizedNoticeGroup struct {
+	Type        string         `json:"type"`
+	Description string         `json:"description,omitempty"`
+	Count       int            `json:"count"`
+	Severity    types.Severity `json:"severity"`
+
+	// File-level aggregation
+	AffectedFiles []string                   `json:"affectedFiles"`
+	FileDetails   map[string]FileIssueDetail `json:"fileDetails,omitempty"`
+
+	// For ID-related issues, group by the problematic ID
+	IDGroups map[string]IDIssueGroup `json:"idGroups,omitempty"`
+
+	// Sample occurrences (for very large groups, show just a few examples)
+	SampleOccurrences []OptimizedOccurrence `json:"sampleOccurrences,omitempty"`
+
+	// Aggregation metadata
+	ShowingDetails bool `json:"showingDetails"` // false if truncated for large groups
+}
+    OptimizedNoticeGroup represents a group of similar validation notices with
+    smart aggregation. For ID-related issues, groups by problematic NetEX ID
+    with context. For other issues, groups by file with detailed occurrence
+    information.
+
+type OptimizedNotices struct {
+	Errors   []OptimizedNoticeGroup `json:"errors,omitempty"`
+	Warnings []OptimizedNoticeGroup `json:"warnings,omitempty"`
+	Info     []OptimizedNoticeGroup `json:"info,omitempty"`
+}
+    OptimizedNotices contains optimized grouped validation notices
+
+type OptimizedOccurrence struct {
+	FileName   string `json:"fileName"`
+	LineNumber int    `json:"lineNumber,omitempty"`
+	XPath      string `json:"xpath,omitempty"`
+	ElementID  string `json:"elementId,omitempty"`
+	Message    string `json:"message,omitempty"`
+}
+    OptimizedOccurrence represents a single occurrence in optimized format
+
+type OptimizedSummary struct {
+	TotalIssues      int  `json:"totalIssues"`
+	UniqueIssueTypes int  `json:"uniqueIssueTypes"`
+	ErrorCount       int  `json:"errorCount"`
+	WarningCount     int  `json:"warningCount"`
+	InfoCount        int  `json:"infoCount"`
+	FilesProcessed   int  `json:"filesProcessed"`
+	FilesWithIssues  int  `json:"filesWithIssues"`
+	IsValid          bool `json:"isValid"`
+}
+    OptimizedSummary provides enhanced summary with grouping insights
 
 type SimpleXPathRule struct {
 	// Has unexported fields.
@@ -509,6 +618,8 @@ type ValidationResult struct {
 	// Cache information
 	CacheHit bool   `json:"cacheHit,omitempty"`
 	FileHash string `json:"fileHash,omitempty"`
+
+	// Has unexported fields.
 }
     ValidationResult represents the outcome of a NetEX validation
 
@@ -608,6 +719,9 @@ func (r *ValidationResult) GetIssuesBySeverity() map[types.Severity][]Validation
 func (r *ValidationResult) IsValid() bool
     IsValid returns true if validation passed (no errors or critical issues)
 
+func (r *ValidationResult) SetRawContent(fileName string, content []byte)
+    SetRawContent stores raw XML content for statistics extraction
+
 func (r *ValidationResult) String() string
     String returns a human-readable string representation
 
@@ -618,18 +732,18 @@ func (r *ValidationResult) ToFlatJSON() ([]byte, error)
     ToFlatJSON converts the validation result to flat JSON format (original
     format)
 
-func (r *ValidationResult) ToGroupedJSON() ([]byte, error)
-    ToGroupedJSON converts the validation result to grouped JSON format
-    (consistent with HTML)
-
 func (r *ValidationResult) ToHTML() ([]byte, error)
     ToHTML converts the validation result to HTML format
 
 func (r *ValidationResult) ToJSON() ([]byte, error)
-    ToJSON converts the validation result to grouped JSON format by default
+    ToJSON converts the validation result to optimized grouped JSON format by
+    default
 
-func (r *ValidationResult) ToJSONWithGrouping(groupBy string) ([]byte, error)
-    ToJSONWithGrouping allows choosing specific grouping for JSON output
+func (r *ValidationResult) ToOptimizedJSON() ([]byte, error)
+    ToOptimizedJSON converts the validation result to optimized grouped JSON
+    format. This method intelligently groups similar validation issues to reduce
+    output size and improve readability, especially for large datasets with many
+    repetitive notices.
 
 type ValidationStatistics struct {
 	TotalIssues      int
