@@ -29,14 +29,14 @@ type OptimizedGroupedResult struct {
 	// Optimized grouped notices
 	Notices OptimizedNotices `json:"notices"`
 
-	// Original flat list (for backwards compatibility)
-	ValidationReportEntries []ValidationReportEntry `json:"validationReportEntries"`
-
 	// Processing info
 	FilesProcessed int           `json:"filesProcessed"`
 	ProcessingTime time.Duration `json:"processingTimeMs"`
 	CacheHit       bool          `json:"cacheHit,omitempty"`
 	FileHash       string        `json:"fileHash,omitempty"`
+
+	// NetEX element statistics
+	Statistics NetEXStatistics `json:"statistics,omitempty"`
 }
 
 // OptimizedSummary provides enhanced summary with grouping insights
@@ -153,6 +153,9 @@ func (r *ValidationResult) createOptimizedGrouping() *OptimizedGroupedResult {
 	// Calculate optimized summary
 	summary := r.calculateOptimizedSummary(len(uniqueTypes))
 
+	// Calculate NetEX element statistics
+	statistics := r.calculateNetEXStatistics()
+
 	return &OptimizedGroupedResult{
 		Codespace:          r.Codespace,
 		ValidationReportID: r.ValidationReportID,
@@ -164,11 +167,11 @@ func (r *ValidationResult) createOptimizedGrouping() *OptimizedGroupedResult {
 			Warnings: warnings,
 			Info:     info,
 		},
-		ValidationReportEntries: r.ValidationReportEntries, // Backwards compatibility
-		FilesProcessed:          r.FilesProcessed,
+		FilesProcessed: r.FilesProcessed,
 		ProcessingTime:          r.ProcessingTime,
 		CacheHit:                r.CacheHit,
 		FileHash:                r.FileHash,
+		Statistics:              statistics,
 	}
 }
 
@@ -424,6 +427,25 @@ func extractContextFromMessage(message string) string {
 	}
 
 	return ""
+}
+
+// calculateNetEXStatistics extracts NetEX element statistics from raw content
+func (r *ValidationResult) calculateNetEXStatistics() NetEXStatistics {
+	if len(r.rawContent) == 0 {
+		return NetEXStatistics{
+			TotalFiles: r.FilesProcessed,
+		}
+	}
+
+	var allStats []NetEXStatistics
+	for fileName, content := range r.rawContent {
+		stats := ExtractStatistics(content, fileName)
+		allStats = append(allStats, stats)
+	}
+
+	merged := MergeStatistics(allStats)
+	merged.TotalFiles = r.FilesProcessed
+	return merged
 }
 
 // getDescriptionForRule returns a human-readable description for a validation rule

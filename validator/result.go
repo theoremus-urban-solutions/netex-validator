@@ -33,6 +33,9 @@ type ValidationResult struct {
 	// Cache information
 	CacheHit bool   `json:"cacheHit,omitempty"`
 	FileHash string `json:"fileHash,omitempty"`
+
+	// Raw content for statistics (not serialized to JSON)
+	rawContent map[string][]byte `json:"-"`
 }
 
 // ValidationReportEntry represents a single validation issue
@@ -355,6 +358,14 @@ func (r *ValidationResult) GetErrorsBySeverity() map[types.Severity][]*errors.Va
 	}
 
 	return result
+}
+
+// SetRawContent stores raw XML content for statistics extraction
+func (r *ValidationResult) SetRawContent(fileName string, content []byte) {
+	if r.rawContent == nil {
+		r.rawContent = make(map[string][]byte)
+	}
+	r.rawContent[fileName] = content
 }
 
 // contains is a helper function to check if a string contains a substring (case-insensitive).

@@ -29,10 +29,11 @@ A comprehensive Go implementation of the NetEX validator for validating NetEX da
 - **Stream Processing**: Memory-efficient processing of large files
 
 ### 📊 Rich Output Options
-- **JSON Reports**: Machine-readable validation results
+- **JSON Reports**: Machine-readable validation results with optimized grouping
 - **HTML Reports**: Interactive reports with tabbed interface and statistics
 - **Plain Text**: Human-readable console output
 - **Detailed Diagnostics**: Location information with XPath and line numbers
+- **Element Statistics**: GTFS-style statistics showing counts of NetEX elements
 
 ### ⚙️ Flexible Configuration
 - **YAML Configuration**: Rule severity overrides and custom settings
@@ -294,41 +295,89 @@ The validator implements 240+ comprehensive validation rules covering:
 
 ## 📊 Output Examples
 
-### JSON Output
+### JSON Output (Optimized Grouping)
 ```json
 {
-  "validationReport": {
-    "creationDate": "2024-01-15T14:30:00Z",
-    "codespace": "MyCodespace",
-    "processingTime": "1.23s",
-    "cacheHit": false,
-    "summary": {
-      "totalIssues": 3,
-      "errors": 2,
-      "warnings": 1,
-      "infos": 0
-    },
-    "validationReportEntries": [
+  "codespace": "MyCodespace",
+  "validationReportId": "validation-123",
+  "creationDate": "2024-01-15T14:30:00Z",
+  "generatedAt": "2024-01-15T14:30:01Z",
+  "summary": {
+    "totalIssues": 150,
+    "uniqueIssueTypes": 3,
+    "errorCount": 2,
+    "warningCount": 148,
+    "infoCount": 0,
+    "filesProcessed": 5,
+    "filesWithIssues": 3,
+    "isValid": false
+  },
+  "notices": {
+    "errors": [
       {
+        "type": "Missing required TransportMode",
+        "description": "TransportMode must be specified for this element",
+        "count": 2,
         "severity": "ERROR",
-        "name": "TRANSPORT_MODE_1",
-        "message": "Line is missing required TransportMode",
-        "fileName": "input.xml",
-        "location": {
-          "lineNumber": 42,
-          "xpath": "//Line[@id='MyCodespace:Line:123']",
-          "elementId": "MyCodespace:Line:123"
+        "affectedFiles": ["lines.xml"],
+        "fileDetails": {
+          "lines.xml": {
+            "count": 2,
+            "elementIds": ["MyCodespace:Line:123", "MyCodespace:Line:456"],
+            "lineNumbers": [42, 85]
+          }
         }
       }
     ],
-    "statistics": {
-      "filesProcessed": 1,
-      "rulesExecuted": 240,
-      "processingTimeMs": 1230
-    }
-  }
+    "warnings": [
+      {
+        "type": "Non-numeric NeTEx version",
+        "description": "NetEX version should be numeric (e.g., '1.0', '1.4')",
+        "count": 148,
+        "severity": "WARNING",
+        "affectedFiles": ["lines.xml", "stops.xml", "routes.xml"],
+        "fileDetails": {
+          "lines.xml": { "count": 50 },
+          "stops.xml": { "count": 48 },
+          "routes.xml": { "count": 50 }
+        }
+      }
+    ]
+  },
+  "statistics": {
+    "operatorCount": 2,
+    "lineCount": 15,
+    "routeCount": 8,
+    "serviceJourneyCount": 245,
+    "stopPlaceCount": 120,
+    "stopPointCount": 180,
+    "timetabledPassingTimeCount": 1240,
+    "dayTypeCount": 7,
+    "serviceCalendarCount": 3,
+    "routePointCount": 340,
+    "routeLinkCount": 280,
+    "journeyPatternCount": 25,
+    "fareZoneCount": 5,
+    "tariffZoneCount": 8,
+    "accessibilityCount": 45,
+    "quayCount": 85,
+    "entranceCount": 12,
+    "pathLinkCount": 18,
+    "totalElements": 2650,
+    "totalFiles": 5
+  },
+  "filesProcessed": 5,
+  "processingTimeMs": 1230
 }
 ```
+
+### Benefits of Optimized Grouping
+
+The optimized JSON format provides:
+- **Reduced Output Size**: Groups similar issues instead of listing thousands of repetitive entries
+- **Better Analysis**: Shows issue patterns and affected files at a glance  
+- **Rich Statistics**: NetEX element counts similar to GTFS validator statistics
+- **Clean Output**: Focuses on grouped insights without repetitive individual entries
 
 ### HTML Report Features
 - **Interactive Interface**: Tabbed navigation between issues, statistics, and files

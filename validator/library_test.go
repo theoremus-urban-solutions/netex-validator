@@ -410,12 +410,14 @@ func TestValidationResult_ToJSON(t *testing.T) {
 		t.Error("JSON data is empty")
 	}
 
-	// Basic validation that it contains expected fields
+	// Basic validation that it contains expected fields for optimized format
 	jsonStr := string(jsonData)
 	expectedFields := []string{
 		`"codespace"`,
 		`"validationReportId"`,
-		`"validationReportEntries"`,
+		`"summary"`,
+		`"notices"`,
+		`"statistics"`,
 		`"filesProcessed"`,
 	}
 
