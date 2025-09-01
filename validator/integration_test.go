@@ -21,7 +21,7 @@ func TestIntegration_ValidMinimal(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
-	if result.Error != "" {
+	if result != nil && result.Error != "" {
 		t.Errorf("unexpected error in result: %s", result.Error)
 	}
 
@@ -73,7 +73,10 @@ func TestIntegration_InvalidMissingElements(t *testing.T) {
 	t.Logf("Missing elements file validation: %d issues found", summary.TotalIssues)
 
 	// Check that we have specific rule violations
-	ruleViolations := result.NumberOfValidationEntriesPerRule
+	var ruleViolations map[string]int
+	if result != nil {
+		ruleViolations = result.NumberOfValidationEntriesPerRule
+	}
 	expectedRules := []string{
 		"Line missing Name",
 		"Route missing Name",

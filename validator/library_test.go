@@ -62,11 +62,11 @@ func TestNew(t *testing.T) {
 		t.Fatal("New() returned nil validator")
 	}
 
-	if validator.config == nil {
+	if validator != nil && validator.config == nil {
 		t.Error("validator config is nil")
 	}
 
-	if validator.runner == nil {
+	if validator != nil && validator.runner == nil {
 		t.Error("validator runner is nil")
 	}
 }
@@ -146,17 +146,20 @@ func TestValidateContent(t *testing.T) {
 			}
 
 			// Check if issues were found as expected
-			hasIssues := len(result.ValidationReportEntries) > 0
+			var hasIssues bool
+			if result != nil {
+				hasIssues = len(result.ValidationReportEntries) > 0
+			}
 			if tt.expectIssues && !hasIssues {
 				t.Error("expected validation issues but found none")
 			}
 
 			// Verify result structure
-			if result.CreationDate.IsZero() {
+			if result != nil && result.CreationDate.IsZero() {
 				t.Error("creation date is zero")
 			}
 
-			if result.ProcessingTime < 0 {
+			if result != nil && result.ProcessingTime < 0 {
 				t.Error("negative processing time")
 			}
 		})
@@ -191,7 +194,7 @@ func TestValidateFile(t *testing.T) {
 		t.Fatal("result is nil")
 	}
 
-	if result.FilesProcessed != 1 {
+	if result != nil && result.FilesProcessed != 1 {
 		t.Errorf("expected 1 file processed, got %d", result.FilesProcessed)
 	}
 }
@@ -209,7 +212,7 @@ func TestValidateFile_NonExistent(t *testing.T) {
 	}
 
 	// Should have an error in the result
-	if result.Error == "" {
+	if result != nil && result.Error == "" {
 		t.Error("expected error in result for non-existent file")
 	}
 }

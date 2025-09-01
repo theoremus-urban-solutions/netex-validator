@@ -14,7 +14,7 @@ func TestDefaultValidationOptions(t *testing.T) {
 	}
 
 	// Check default values
-	if options.Codespace != "Default" {
+	if options != nil && options.Codespace != "Default" {
 		t.Errorf("expected default codespace 'Default', got %q", options.Codespace)
 	}
 

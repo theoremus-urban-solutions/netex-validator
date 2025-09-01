@@ -27,7 +27,9 @@ func TestNewLogger(t *testing.T) {
 		t.Fatal("NewLogger returned nil")
 	}
 
-	logger.Info("test message", "key", "value")
+	if logger != nil {
+		logger.Info("test message", "key", "value")
+	}
 
 	output := buf.String()
 	if !strings.Contains(output, "test message") {
@@ -65,7 +67,9 @@ func TestNewDefaultLogger(t *testing.T) {
 	}
 
 	// Test that it doesn't panic
-	logger.Info("test message")
+	if logger != nil {
+		logger.Info("test message")
+	}
 }
 
 func TestNewJSONLogger(t *testing.T) {
