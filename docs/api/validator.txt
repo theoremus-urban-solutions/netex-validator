@@ -41,6 +41,34 @@ Output formats include JSON, HTML (with interactive interface), and plain text.
 
 TYPES
 
+type GroupedJSONResult struct {
+	// Metadata
+	Codespace          string    `json:"codespace"`
+	ValidationReportID string    `json:"validationReportId"`
+	CreationDate       time.Time `json:"creationDate"`
+	GeneratedAt        time.Time `json:"generatedAt"`
+
+	// Summary and statistics (consistent with HTML)
+	Summary    ValidationSummary      `json:"summary"`
+	Statistics map[string]interface{} `json:"statistics"`
+
+	// Original flat list (for backwards compatibility)
+	ValidationReportEntries []ValidationReportEntry `json:"validationReportEntries"`
+
+	// Grouped views (matching HTML report tabs)
+	GroupedByFile     map[string][]ValidationReportEntry `json:"groupedByFile"`
+	GroupedBySeverity map[string][]ValidationReportEntry `json:"groupedBySeverity"`
+	GroupedByRule     map[string][]ValidationReportEntry `json:"groupedByRule"`
+
+	// Processing info
+	FilesProcessed int           `json:"filesProcessed"`
+	ProcessingTime time.Duration `json:"processingTimeMs"`
+	CacheHit       bool          `json:"cacheHit,omitempty"`
+	FileHash       string        `json:"fileHash,omitempty"`
+}
+    GroupedJSONResult represents the JSON output with grouping similar to HTML
+    report
+
 type HTMLReporter struct {
 	// Has unexported fields.
 }
@@ -586,11 +614,22 @@ func (r *ValidationResult) String() string
 func (r *ValidationResult) Summary() ValidationSummary
     Summary returns a summary of validation results
 
+func (r *ValidationResult) ToFlatJSON() ([]byte, error)
+    ToFlatJSON converts the validation result to flat JSON format (original
+    format)
+
+func (r *ValidationResult) ToGroupedJSON() ([]byte, error)
+    ToGroupedJSON converts the validation result to grouped JSON format
+    (consistent with HTML)
+
 func (r *ValidationResult) ToHTML() ([]byte, error)
     ToHTML converts the validation result to HTML format
 
 func (r *ValidationResult) ToJSON() ([]byte, error)
-    ToJSON converts the validation result to JSON format
+    ToJSON converts the validation result to grouped JSON format by default
+
+func (r *ValidationResult) ToJSONWithGrouping(groupBy string) ([]byte, error)
+    ToJSONWithGrouping allows choosing specific grouping for JSON output
 
 type ValidationStatistics struct {
 	TotalIssues      int
