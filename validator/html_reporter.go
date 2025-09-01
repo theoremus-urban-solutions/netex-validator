@@ -9,6 +9,10 @@ import (
 	"github.com/theoremus-urban-solutions/netex-validator/types"
 )
 
+const (
+	unknownSeverityClass = "unknown"
+)
+
 // HTMLReporter generates professional HTML reports for validation results
 type HTMLReporter struct {
 	template *template.Template
@@ -143,7 +147,7 @@ func severityClass(severity types.Severity) string {
 	case types.INFO:
 		return "info"
 	default:
-		return "unknown"
+		return unknownSeverityClass
 	}
 }
 
