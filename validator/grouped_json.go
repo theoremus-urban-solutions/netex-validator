@@ -11,6 +11,7 @@ import (
 const (
 	// Constants for string literals used multiple times
 	unknownFileName = "Unknown"
+	unknownSeverity = "Unknown"
 )
 
 // GroupedJSONResult represents the JSON output with grouping similar to HTML report
@@ -194,6 +195,6 @@ func severityTextForJSON(severity types.Severity) string {
 	case types.INFO:
 		return "Info"
 	default:
-		return "Unknown"
+		return unknownSeverity
 	}
 }
