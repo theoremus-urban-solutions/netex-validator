@@ -100,7 +100,6 @@ func (c *OptimizedHTTPClient) Get(ctx context.Context, url string) (*http.Respon
 	// Set optimal headers for schema downloads
 	req.Header.Set("User-Agent", "NetEX-Validator-Go/1.0 (optimized)")
 	req.Header.Set("Accept", "application/xml, text/xml, */*")
-	req.Header.Set("Accept-Encoding", "gzip, deflate")
 	req.Header.Set("Connection", "keep-alive")
 
 	return c.doWithRetry(req)
